@@ -1,0 +1,71 @@
+<?php
+
+use App\Http\Controllers\Admin\AuthController as AdminAuthController;
+use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\PageController as AdminPageController;
+use App\Http\Controllers\Admin\ServiceController as AdminServiceController;
+use App\Http\Controllers\Frontend\BlogController;
+use App\Http\Controllers\Frontend\ContactController;
+use App\Http\Controllers\Frontend\HomeController;
+use App\Http\Controllers\Frontend\PageController;
+use App\Http\Controllers\Frontend\ServiceController;
+use App\Http\Middleware\AdminAuth;
+use Illuminate\Support\Facades\Route;
+
+/*
+|--------------------------------------------------------------------------
+| Admin Routes
+|--------------------------------------------------------------------------
+*/
+
+Route::prefix('admin')->name('admin.')->group(function () {
+    Route::get('/login', [AdminAuthController::class, 'showLoginForm'])->name('login');
+    Route::post('/login', [AdminAuthController::class, 'login'])->name('login.submit');
+
+    Route::middleware(AdminAuth::class)->group(function () {
+        Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
+
+        Route::get('/pages', [AdminPageController::class, 'index'])->name('pages.index');
+        Route::get('/pages/create', [AdminPageController::class, 'create'])->name('pages.create');
+        Route::post('/pages', [AdminPageController::class, 'store'])->name('pages.store');
+        Route::get('/pages/{id}/edit', [AdminPageController::class, 'edit'])->name('pages.edit');
+        Route::put('/pages/{id}', [AdminPageController::class, 'update'])->name('pages.update');
+        Route::delete('/pages/{id}', [AdminPageController::class, 'destroy'])->name('pages.destroy');
+
+        Route::get('/services', [AdminServiceController::class, 'index'])->name('services.index');
+        Route::get('/services/create', [AdminServiceController::class, 'create'])->name('services.create');
+        Route::post('/services', [AdminServiceController::class, 'store'])->name('services.store');
+        Route::get('/services/{id}/edit', [AdminServiceController::class, 'edit'])->name('services.edit');
+        Route::put('/services/{id}', [AdminServiceController::class, 'update'])->name('services.update');
+        Route::delete('/services/{id}', [AdminServiceController::class, 'destroy'])->name('services.destroy');
+
+        Route::post('/logout', [AdminAuthController::class, 'logout'])->name('logout');
+    });
+});
+
+/*
+|--------------------------------------------------------------------------
+| Frontend Routes
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/', [HomeController::class, 'index'])->name('home');
+
+Route::get('/hizmetler', [ServiceController::class, 'index'])->name('services.index');
+Route::get('/hizmetler/{slug}', [ServiceController::class, 'show'])->name('services.show');
+
+Route::get('/blog', [BlogController::class, 'index'])->name('blog.index');
+Route::get('/blog/kategori/{slug}', [BlogController::class, 'category'])->name('blog.category');
+Route::get('/blog/{slug}', [BlogController::class, 'show'])->name('blog.show');
+
+Route::get('/iletisim', [ContactController::class, 'index'])->name('contact.index');
+Route::post('/iletisim', [ContactController::class, 'store'])->name('contact.store');
+
+/*
+|--------------------------------------------------------------------------
+| Dinamik Sayfa Route
+|--------------------------------------------------------------------------
+| Bu route en sonda kalmalı.
+|--------------------------------------------------------------------------
+*/
+Route::get('/{slug}', [PageController::class, 'show'])->name('pages.show');

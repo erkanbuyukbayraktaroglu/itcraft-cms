@@ -1,0 +1,162 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
+use Illuminate\View\View;
+
+class AdminUserController extends Controller
+{
+    public function index(): View
+    {
+        $users = DB::table('users')
+            ->orderByDesc('id')
+            ->get();
+
+        return view('admin.users.index', compact('users'));
+    }
+
+    public function create(): View
+    {
+        return view('admin.users.create');
+    }
+
+    public function store(Request $request): RedirectResponse
+    {
+        $validated = $request->validate(
+            [
+                'name' => ['required', 'string', 'min:2', 'max:255'],
+                'email' => ['required', 'email', 'max:255', 'unique:users,email'],
+                'password' => ['required', 'string', 'min:8', 'confirmed'],
+                'is_active' => ['nullable', 'in:1'],
+            ],
+            [
+                'name.required' => 'Ad soyad alanı zorunludur.',
+                'email.required' => 'E-posta alanı zorunludur.',
+                'email.email' => 'Geçerli bir e-posta adresi giriniz.',
+                'email.unique' => 'Bu e-posta adresi zaten kullanılıyor.',
+                'password.required' => 'Şifre alanı zorunludur.',
+                'password.min' => 'Şifre en az 8 karakter olmalıdır.',
+                'password.confirmed' => 'Şifre tekrarı eşleşmiyor.',
+            ]
+        );
+
+        DB::table('users')->insert([
+            'name' => $validated['name'],
+            'email' => mb_strtolower($validated['email']),
+            'password' => Hash::make($validated['password']),
+            'role' => 'admin',
+            'is_active' => $request->has('is_active') ? 1 : 0,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        return redirect()
+            ->route('admin.users.index')
+            ->with('success', 'Admin kullanıcısı başarıyla oluşturuldu.');
+    }
+
+    public function edit(int $id): View
+    {
+        $user = DB::table('users')->where('id', $id)->first();
+
+        abort_if(!$user, 404);
+
+        return view('admin.users.edit', compact('user'));
+    }
+
+    public function update(Request $request, int $id): RedirectResponse
+    {
+        $user = DB::table('users')->where('id', $id)->first();
+
+        abort_if(!$user, 404);
+
+        $validated = $request->validate(
+            [
+                'name' => ['required', 'string', 'min:2', 'max:255'],
+                'email' => [
+                    'required',
+                    'email',
+                    'max:255',
+                    Rule::unique('users', 'email')->ignore($id),
+                ],
+                'password' => ['nullable', 'string', 'min:8', 'confirmed'],
+                'is_active' => ['nullable', 'in:1'],
+            ],
+            [
+                'name.required' => 'Ad soyad alanı zorunludur.',
+                'email.required' => 'E-posta alanı zorunludur.',
+                'email.email' => 'Geçerli bir e-posta adresi giriniz.',
+                'email.unique' => 'Bu e-posta adresi zaten kullanılıyor.',
+                'password.min' => 'Şifre en az 8 karakter olmalıdır.',
+                'password.confirmed' => 'Şifre tekrarı eşleşmiyor.',
+            ]
+        );
+
+        $data = [
+            'name' => $validated['name'],
+            'email' => mb_strtolower($validated['email']),
+            'role' => 'admin',
+            'is_active' => $request->has('is_active') ? 1 : 0,
+            'updated_at' => now(),
+        ];
+
+        if (!empty($validated['password'])) {
+            $data['password'] = Hash::make($validated['password']);
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Aktif oturumdaki kullanıcı kendisini pasif yapamasın.
+        |--------------------------------------------------------------------------
+        */
+
+        $currentUserId = (int) session('admin_user_id');
+
+        if ($currentUserId === $id) {
+            $data['is_active'] = 1;
+        }
+
+        DB::table('users')
+            ->where('id', $id)
+            ->update($data);
+
+        return redirect()
+            ->route('admin.users.index')
+            ->with('success', 'Admin kullanıcısı başarıyla güncellendi.');
+    }
+
+    public function destroy(int $id): RedirectResponse
+    {
+        $currentUserId = (int) session('admin_user_id');
+
+        if ($currentUserId === $id) {
+            return redirect()
+                ->route('admin.users.index')
+                ->with('error', 'Kendi kullanıcını silemezsin.');
+        }
+
+        $adminCount = DB::table('users')
+            ->where('role', 'admin')
+            ->count();
+
+        if ($adminCount <= 1) {
+            return redirect()
+                ->route('admin.users.index')
+                ->with('error', 'Sistemde en az bir admin kullanıcısı kalmalıdır.');
+        }
+
+        DB::table('users')
+            ->where('id', $id)
+            ->delete();
+
+        return redirect()
+            ->route('admin.users.index')
+            ->with('success', 'Admin kullanıcısı başarıyla silindi.');
+    }
+}

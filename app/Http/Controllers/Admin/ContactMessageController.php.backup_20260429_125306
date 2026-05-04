@@ -1,0 +1,142 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\ContactMessage;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\View\View;
+
+class ContactMessageController extends Controller
+{
+    public function index(): View
+    {
+        $this->ensureContactMessagesTable();
+
+        $messages = ContactMessage::query()
+            ->orderByDesc('id')
+            ->limit(100)
+            ->get();
+
+        return view('admin.contact-messages.index', compact('messages'));
+    }
+
+    public function show(int $id): View
+    {
+        $this->ensureContactMessagesTable();
+
+        $message = ContactMessage::query()->findOrFail($id);
+
+        if (!$message->is_read) {
+            $message->forceFill([
+                'is_read' => true,
+                'read_at' => now(),
+            ])->save();
+        }
+
+        return view('admin.contact-messages.show', compact('message'));
+    }
+
+    public function markRead(int $id): RedirectResponse
+    {
+        $this->ensureContactMessagesTable();
+
+        $message = ContactMessage::query()->findOrFail($id);
+
+        $message->forceFill([
+            'is_read' => true,
+            'read_at' => now(),
+        ])->save();
+
+        return redirect()
+            ->route('admin.contact-messages.index')
+            ->with('success', 'Mesaj okundu olarak işaretlendi.');
+    }
+
+    public function markUnread(int $id): RedirectResponse
+    {
+        $this->ensureContactMessagesTable();
+
+        $message = ContactMessage::query()->findOrFail($id);
+
+        $message->forceFill([
+            'is_read' => false,
+            'read_at' => null,
+        ])->save();
+
+        return redirect()
+            ->route('admin.contact-messages.index')
+            ->with('success', 'Mesaj okunmadı olarak işaretlendi.');
+    }
+
+    public function destroy(int $id): RedirectResponse
+    {
+        $this->ensureContactMessagesTable();
+
+        $message = ContactMessage::query()->findOrFail($id);
+        $message->delete();
+
+        return redirect()
+            ->route('admin.contact-messages.index')
+            ->with('success', 'Mesaj başarıyla silindi.');
+    }
+
+    private function ensureContactMessagesTable(): void
+    {
+        if (!Schema::hasTable('contact_messages')) {
+            Schema::create('contact_messages', function (Blueprint $table) {
+                $table->id();
+                $table->string('name')->nullable();
+                $table->string('email')->nullable();
+                $table->string('phone')->nullable();
+                $table->string('subject')->nullable();
+                $table->text('message')->nullable();
+                $table->boolean('is_read')->default(false);
+                $table->timestamp('read_at')->nullable();
+                $table->timestamps();
+            });
+
+            return;
+        }
+
+        Schema::table('contact_messages', function (Blueprint $table) {
+            if (!Schema::hasColumn('contact_messages', 'name')) {
+                $table->string('name')->nullable();
+            }
+
+            if (!Schema::hasColumn('contact_messages', 'email')) {
+                $table->string('email')->nullable();
+            }
+
+            if (!Schema::hasColumn('contact_messages', 'phone')) {
+                $table->string('phone')->nullable();
+            }
+
+            if (!Schema::hasColumn('contact_messages', 'subject')) {
+                $table->string('subject')->nullable();
+            }
+
+            if (!Schema::hasColumn('contact_messages', 'message')) {
+                $table->text('message')->nullable();
+            }
+
+            if (!Schema::hasColumn('contact_messages', 'is_read')) {
+                $table->boolean('is_read')->default(false);
+            }
+
+            if (!Schema::hasColumn('contact_messages', 'read_at')) {
+                $table->timestamp('read_at')->nullable();
+            }
+
+            if (!Schema::hasColumn('contact_messages', 'created_at')) {
+                $table->timestamp('created_at')->nullable();
+            }
+
+            if (!Schema::hasColumn('contact_messages', 'updated_at')) {
+                $table->timestamp('updated_at')->nullable();
+            }
+        });
+    }
+}

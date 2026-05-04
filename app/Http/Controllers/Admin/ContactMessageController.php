@@ -1,0 +1,85 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\DB;
+use Illuminate\View\View;
+
+class ContactMessageController extends Controller
+{
+    public function index(): View
+    {
+        $messages = DB::table('contact_messages')
+            ->orderByDesc('id')
+            ->limit(100)
+            ->get();
+
+        return view('admin.contact-messages.index', compact('messages'));
+    }
+
+    public function show(int $id): View
+    {
+        $message = DB::table('contact_messages')
+            ->where('id', $id)
+            ->first();
+
+        abort_if(!$message, 404);
+
+        DB::table('contact_messages')
+            ->where('id', $id)
+            ->update([
+                'is_read' => 1,
+                'read_at' => date('Y-m-d H:i:s'),
+                'updated_at' => date('Y-m-d H:i:s'),
+            ]);
+
+        $message = DB::table('contact_messages')
+            ->where('id', $id)
+            ->first();
+
+        return view('admin.contact-messages.show', compact('message'));
+    }
+
+    public function markRead(int $id): RedirectResponse
+    {
+        DB::table('contact_messages')
+            ->where('id', $id)
+            ->update([
+                'is_read' => 1,
+                'read_at' => date('Y-m-d H:i:s'),
+                'updated_at' => date('Y-m-d H:i:s'),
+            ]);
+
+        return redirect()
+            ->route('admin.contact-messages.index')
+            ->with('success', 'Mesaj okundu olarak işaretlendi.');
+    }
+
+    public function markUnread(int $id): RedirectResponse
+    {
+        DB::table('contact_messages')
+            ->where('id', $id)
+            ->update([
+                'is_read' => 0,
+                'read_at' => null,
+                'updated_at' => date('Y-m-d H:i:s'),
+            ]);
+
+        return redirect()
+            ->route('admin.contact-messages.index')
+            ->with('success', 'Mesaj okunmadı olarak işaretlendi.');
+    }
+
+    public function destroy(int $id): RedirectResponse
+    {
+        DB::table('contact_messages')
+            ->where('id', $id)
+            ->delete();
+
+        return redirect()
+            ->route('admin.contact-messages.index')
+            ->with('success', 'Mesaj başarıyla silindi.');
+    }
+}

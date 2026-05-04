@@ -1,0 +1,134 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Str;
+use Illuminate\View\View;
+
+class MediaController extends Controller
+{
+    private string $uploadDirectory = 'uploads/media';
+
+    public function index(): View
+    {
+        $mediaFiles = $this->getMediaFiles();
+
+        return view('admin.media.index', compact('mediaFiles'));
+    }
+
+    public function store(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'media_file' => ['required', 'file', 'mimes:jpg,jpeg,png,webp,gif,svg', 'max:5120'],
+        ]);
+
+        $file = $request->file('media_file');
+
+        if (!$file || !$file->isValid()) {
+            return back()->with('error', 'Dosya yüklenemedi. Lütfen tekrar deneyin.');
+        }
+
+        $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+        $extension = strtolower($file->getClientOriginalExtension());
+
+        $safeName = Str::slug($originalName);
+
+        if ($safeName === '') {
+            $safeName = 'gorsel';
+        }
+
+        $fileName = $safeName . '-' . date('Ymd-His') . '.' . $extension;
+
+        $targetPath = public_path($this->uploadDirectory);
+
+        if (!is_dir($targetPath)) {
+            mkdir($targetPath, 0755, true);
+        }
+
+        $file->move($targetPath, $fileName);
+
+        return redirect()
+            ->route('admin.media.index')
+            ->with('success', 'Görsel başarıyla yüklendi. Path: ' . $this->uploadDirectory . '/' . $fileName);
+    }
+
+    public function destroy(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'file' => ['required', 'string'],
+        ]);
+
+        $file = $request->input('file');
+
+        if (str_contains($file, '..') || str_starts_with($file, '/') || str_contains($file, '\\')) {
+            return back()->with('error', 'Geçersiz dosya yolu.');
+        }
+
+        $filePath = public_path($file);
+
+        $allowedBasePath = realpath(public_path($this->uploadDirectory));
+
+        if (!$allowedBasePath || !file_exists($filePath)) {
+            return back()->with('error', 'Dosya bulunamadı.');
+        }
+
+        $realFilePath = realpath($filePath);
+
+        if (!$realFilePath || !str_starts_with($realFilePath, $allowedBasePath)) {
+            return back()->with('error', 'Bu dosya silinemez.');
+        }
+
+        unlink($realFilePath);
+
+        return redirect()
+            ->route('admin.media.index')
+            ->with('success', 'Dosya başarıyla silindi.');
+    }
+
+    private function getMediaFiles(): array
+    {
+        $directory = public_path($this->uploadDirectory);
+
+        if (!is_dir($directory)) {
+            mkdir($directory, 0755, true);
+        }
+
+        $files = array_diff(scandir($directory), ['.', '..']);
+
+        $mediaFiles = [];
+
+        foreach ($files as $file) {
+            $fullPath = $directory . DIRECTORY_SEPARATOR . $file;
+
+            if (!is_file($fullPath)) {
+                continue;
+            }
+
+            $extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
+
+            if (!in_array($extension, ['jpg', 'jpeg', 'png', 'webp', 'gif', 'svg'], true)) {
+                continue;
+            }
+
+            $relativePath = $this->uploadDirectory . '/' . $file;
+
+            $mediaFiles[] = [
+                'name' => $file,
+                'path' => $relativePath,
+                'url' => asset($relativePath),
+                'extension' => $extension,
+                'size' => filesize($fullPath),
+                'modified_at' => filemtime($fullPath),
+            ];
+        }
+
+        usort($mediaFiles, function ($a, $b) {
+            return $b['modified_at'] <=> $a['modified_at'];
+        });
+
+        return $mediaFiles;
+    }
+}

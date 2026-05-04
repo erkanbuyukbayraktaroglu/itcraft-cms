@@ -1,0 +1,184 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\View\View;
+
+class DashboardController extends Controller
+{
+    public function index(): View
+    {
+        $stats = [
+            [
+                'title' => 'Toplam Sayfa',
+                'value' => $this->tableCount('pages'),
+                'description' => 'Yönetilen içerik sayfaları',
+                'route' => route('admin.pages.index'),
+            ],
+            [
+                'title' => 'Toplam Hizmet',
+                'value' => $this->tableCount('services'),
+                'description' => 'Hizmet kayıtları',
+                'route' => route('admin.services.index'),
+            ],
+            [
+                'title' => 'Blog Yazısı',
+                'value' => $this->tableCount('posts'),
+                'description' => 'Yayınlanan/yönetilen blog içerikleri',
+                'route' => route('admin.posts.index'),
+            ],
+            [
+                'title' => 'Slider',
+                'value' => $this->tableCount('sliders'),
+                'description' => 'Ana sayfa slider kayıtları',
+                'route' => route('admin.sliders.index'),
+            ],
+            [
+                'title' => 'Ekip Üyesi',
+                'value' => $this->tableCount('team_members'),
+                'description' => 'Ekip profilleri',
+                'route' => route('admin.team-members.index'),
+            ],
+            [
+                'title' => 'Medya Dosyası',
+                'value' => $this->mediaCount(),
+                'description' => 'Yüklenen görsel dosyaları',
+                'route' => route('admin.media.index'),
+            ],
+            [
+                'title' => 'İletişim Mesajı',
+                'value' => $this->tableCount('contact_messages'),
+                'description' => 'Toplam gelen mesaj',
+                'route' => route('admin.contact-messages.index'),
+            ],
+            [
+                'title' => 'Okunmamış Mesaj',
+                'value' => $this->unreadContactMessageCount(),
+                'description' => 'Yanıt bekleyen yeni mesajlar',
+                'route' => route('admin.contact-messages.index'),
+                'highlight' => true,
+            ],
+        ];
+
+        $recentMessages = $this->recentContactMessages();
+
+        $quickLinks = [
+            [
+                'title' => 'Yeni Sayfa Ekle',
+                'description' => 'Kurumsal içerik sayfası oluştur',
+                'url' => route('admin.pages.create'),
+            ],
+            [
+                'title' => 'Yeni Hizmet Ekle',
+                'description' => 'Hizmet kaydı oluştur',
+                'url' => route('admin.services.create'),
+            ],
+            [
+                'title' => 'Blog Yazısı Ekle',
+                'description' => 'Yeni blog içeriği oluştur',
+                'url' => route('admin.posts.create'),
+            ],
+            [
+                'title' => 'Slider Ekle',
+                'description' => 'Ana sayfa slider görseli ekle',
+                'url' => route('admin.sliders.create'),
+            ],
+            [
+                'title' => 'Medya Yükle',
+                'description' => 'Görsel yükle ve path al',
+                'url' => route('admin.media.index'),
+            ],
+            [
+                'title' => 'Site Ayarları',
+                'description' => 'Logo, renk, SEO ve iletişim bilgileri',
+                'url' => route('admin.settings.index'),
+            ],
+        ];
+
+        return view('admin.dashboard', compact('stats', 'recentMessages', 'quickLinks'));
+    }
+
+    private function tableCount(string $table): int
+    {
+        try {
+            if (!Schema::hasTable($table)) {
+                return 0;
+            }
+
+            return DB::table($table)->count();
+        } catch (\Throwable $e) {
+            return 0;
+        }
+    }
+
+    private function unreadContactMessageCount(): int
+    {
+        try {
+            if (!Schema::hasTable('contact_messages')) {
+                return 0;
+            }
+
+            if (!Schema::hasColumn('contact_messages', 'is_read')) {
+                return 0;
+            }
+
+            return DB::table('contact_messages')
+                ->where('is_read', 0)
+                ->count();
+        } catch (\Throwable $e) {
+            return 0;
+        }
+    }
+
+    private function recentContactMessages()
+    {
+        try {
+            if (!Schema::hasTable('contact_messages')) {
+                return collect();
+            }
+
+            return DB::table('contact_messages')
+                ->orderByDesc('id')
+                ->limit(5)
+                ->get();
+        } catch (\Throwable $e) {
+            return collect();
+        }
+    }
+
+    private function mediaCount(): int
+    {
+        try {
+            $directory = public_path('uploads/media');
+
+            if (!is_dir($directory)) {
+                return 0;
+            }
+
+            $allowedExtensions = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'svg'];
+            $files = array_diff(scandir($directory), ['.', '..']);
+            $count = 0;
+
+            foreach ($files as $file) {
+                $fullPath = $directory . DIRECTORY_SEPARATOR . $file;
+
+                if (!is_file($fullPath)) {
+                    continue;
+                }
+
+                $extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
+
+                if (in_array($extension, $allowedExtensions, true)) {
+                    $count++;
+                }
+            }
+
+            return $count;
+        } catch (\Throwable $e) {
+            return 0;
+        }
+    }
+}

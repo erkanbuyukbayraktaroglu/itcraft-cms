@@ -1,0 +1,527 @@
+<?php
+
+use App\Http\Controllers\Admin\AuthController as AdminAuthController;
+use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\MediaController as AdminMediaController;
+use App\Http\Controllers\Admin\MenuController as AdminMenuController;
+use App\Http\Controllers\Admin\PageController as AdminPageController;
+use App\Http\Controllers\Admin\PostCategoryController as AdminPostCategoryController;
+use App\Http\Controllers\Admin\PostController as AdminPostController;
+use App\Http\Controllers\Admin\ServiceController as AdminServiceController;
+use App\Http\Controllers\Admin\SettingController as AdminSettingController;
+use App\Http\Controllers\Admin\SliderController as AdminSliderController;
+use App\Http\Controllers\Admin\TeamMemberController as AdminTeamMemberController;
+use App\Http\Controllers\Frontend\BlogController;
+use App\Http\Controllers\Frontend\ContactController;
+use App\Http\Controllers\Frontend\HomeController;
+use App\Http\Controllers\Frontend\PageController;
+use App\Http\Controllers\Frontend\ServiceController;
+use App\Http\Controllers\Frontend\TeamController;
+use App\Http\Middleware\AdminAuth;
+use Illuminate\Support\Facades\Route;
+
+/*
+|--------------------------------------------------------------------------
+| Admin Routes
+|--------------------------------------------------------------------------
+*/
+
+Route::prefix('admin')->name('admin.')->group(function () {
+    Route::get('/login', [AdminAuthController::class, 'showLoginForm'])->name('login');
+    Route::post('/login', [AdminAuthController::class, 'login'])->name('login.submit');
+
+    Route::middleware(AdminAuth::class)->group(function () {
+        Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
+
+        Route::get('/pages', [AdminPageController::class, 'index'])->name('pages.index');
+        Route::get('/pages/create', [AdminPageController::class, 'create'])->name('pages.create');
+        Route::post('/pages', [AdminPageController::class, 'store'])->name('pages.store');
+        Route::get('/pages/{id}/edit', [AdminPageController::class, 'edit'])->name('pages.edit');
+        Route::put('/pages/{id}', [AdminPageController::class, 'update'])->name('pages.update');
+        Route::delete('/pages/{id}', [AdminPageController::class, 'destroy'])->name('pages.destroy');
+
+        Route::get('/services', [AdminServiceController::class, 'index'])->name('services.index');
+        Route::get('/services/create', [AdminServiceController::class, 'create'])->name('services.create');
+        Route::post('/services', [AdminServiceController::class, 'store'])->name('services.store');
+        Route::get('/services/{id}/edit', [AdminServiceController::class, 'edit'])->name('services.edit');
+        Route::put('/services/{id}', [AdminServiceController::class, 'update'])->name('services.update');
+        Route::delete('/services/{id}', [AdminServiceController::class, 'destroy'])->name('services.destroy');
+
+        Route::get('/post-categories', [AdminPostCategoryController::class, 'index'])->name('post-categories.index');
+        Route::get('/post-categories/create', [AdminPostCategoryController::class, 'create'])->name('post-categories.create');
+        Route::post('/post-categories', [AdminPostCategoryController::class, 'store'])->name('post-categories.store');
+        Route::get('/post-categories/{id}/edit', [AdminPostCategoryController::class, 'edit'])->name('post-categories.edit');
+        Route::put('/post-categories/{id}', [AdminPostCategoryController::class, 'update'])->name('post-categories.update');
+        Route::delete('/post-categories/{id}', [AdminPostCategoryController::class, 'destroy'])->name('post-categories.destroy');
+
+        Route::get('/posts', [AdminPostController::class, 'index'])->name('posts.index');
+        Route::get('/posts/create', [AdminPostController::class, 'create'])->name('posts.create');
+        Route::post('/posts', [AdminPostController::class, 'store'])->name('posts.store');
+        Route::get('/posts/{id}/edit', [AdminPostController::class, 'edit'])->name('posts.edit');
+        Route::put('/posts/{id}', [AdminPostController::class, 'update'])->name('posts.update');
+        Route::delete('/posts/{id}', [AdminPostController::class, 'destroy'])->name('posts.destroy');
+
+        Route::get('/sliders', [AdminSliderController::class, 'index'])->name('sliders.index');
+        Route::get('/sliders/create', [AdminSliderController::class, 'create'])->name('sliders.create');
+        Route::post('/sliders', [AdminSliderController::class, 'store'])->name('sliders.store');
+        Route::get('/sliders/{id}/edit', [AdminSliderController::class, 'edit'])->name('sliders.edit');
+        Route::put('/sliders/{id}', [AdminSliderController::class, 'update'])->name('sliders.update');
+        Route::delete('/sliders/{id}', [AdminSliderController::class, 'destroy'])->name('sliders.destroy');
+
+        Route::get('/team-members', [AdminTeamMemberController::class, 'index'])->name('team-members.index');
+        Route::get('/team-members/create', [AdminTeamMemberController::class, 'create'])->name('team-members.create');
+        Route::post('/team-members', [AdminTeamMemberController::class, 'store'])->name('team-members.store');
+        Route::get('/team-members/{id}/edit', [AdminTeamMemberController::class, 'edit'])->name('team-members.edit');
+        Route::put('/team-members/{id}', [AdminTeamMemberController::class, 'update'])->name('team-members.update');
+        Route::delete('/team-members/{id}', [AdminTeamMemberController::class, 'destroy'])->name('team-members.destroy');
+
+        Route::get('/menus', [AdminMenuController::class, 'index'])->name('menus.index');
+        Route::get('/menus/create', [AdminMenuController::class, 'create'])->name('menus.create');
+        Route::post('/menus', [AdminMenuController::class, 'store'])->name('menus.store');
+        Route::get('/menus/{id}/edit', [AdminMenuController::class, 'edit'])->name('menus.edit');
+        Route::put('/menus/{id}', [AdminMenuController::class, 'update'])->name('menus.update');
+        Route::delete('/menus/{id}', [AdminMenuController::class, 'destroy'])->name('menus.destroy');
+
+        Route::post('/menus/{menuId}/items', [AdminMenuController::class, 'storeItem'])->name('menus.items.store');
+        Route::get('/menus/items/{itemId}/edit', [AdminMenuController::class, 'editItem'])->name('menus.items.edit');
+        Route::put('/menus/items/{itemId}', [AdminMenuController::class, 'updateItem'])->name('menus.items.update');
+        Route::delete('/menus/items/{itemId}', [AdminMenuController::class, 'destroyItem'])->name('menus.items.destroy');
+
+        Route::get('/media', [AdminMediaController::class, 'index'])->name('media.index');
+        Route::post('/media', [AdminMediaController::class, 'store'])->name('media.store');
+        Route::delete('/media', [AdminMediaController::class, 'destroy'])->name('media.destroy');
+        Route::get('/contact-messages', [\App\Http\Controllers\Admin\ContactMessageController::class, 'index'])->name('contact-messages.index');
+        Route::get('/contact-messages/{id}', [\App\Http\Controllers\Admin\ContactMessageController::class, 'show'])->name('contact-messages.show');
+        Route::post('/contact-messages/{id}/read', [\App\Http\Controllers\Admin\ContactMessageController::class, 'markRead'])->name('contact-messages.read');
+        Route::post('/contact-messages/{id}/unread', [\App\Http\Controllers\Admin\ContactMessageController::class, 'markUnread'])->name('contact-messages.unread');
+        Route::delete('/contact-messages/{id}', [\App\Http\Controllers\Admin\ContactMessageController::class, 'destroy'])->name('contact-messages.destroy');
+Route::get('/contact-messages', [\App\Http\Controllers\Admin\ContactMessageController::class, 'index'])->name('contact-messages.index');
+        Route::get('/contact-messages/{id}', [\App\Http\Controllers\Admin\ContactMessageController::class, 'show'])->name('contact-messages.show');
+        Route::post('/contact-messages/{id}/read', [\App\Http\Controllers\Admin\ContactMessageController::class, 'markRead'])->name('contact-messages.read');
+        Route::post('/contact-messages/{id}/unread', [\App\Http\Controllers\Admin\ContactMessageController::class, 'markUnread'])->name('contact-messages.unread');
+        Route::delete('/contact-messages/{id}', [\App\Http\Controllers\Admin\ContactMessageController::class, 'destroy'])->name('contact-messages.destroy');
+Route::get('/contact-messages', [\App\Http\Controllers\Admin\ContactMessageController::class, 'index'])->name('contact-messages.index');
+        Route::get('/contact-messages/{id}', [\App\Http\Controllers\Admin\ContactMessageController::class, 'show'])->name('contact-messages.show');
+        Route::post('/contact-messages/{id}/read', [\App\Http\Controllers\Admin\ContactMessageController::class, 'markRead'])->name('contact-messages.read');
+        Route::post('/contact-messages/{id}/unread', [\App\Http\Controllers\Admin\ContactMessageController::class, 'markUnread'])->name('contact-messages.unread');
+        Route::delete('/contact-messages/{id}', [\App\Http\Controllers\Admin\ContactMessageController::class, 'destroy'])->name('contact-messages.destroy');
+Route::get('/contact-messages', [\App\Http\Controllers\Admin\ContactMessageController::class, 'index'])->name('contact-messages.index');
+        Route::get('/contact-messages/{id}', [\App\Http\Controllers\Admin\ContactMessageController::class, 'show'])->name('contact-messages.show');
+        Route::post('/contact-messages/{id}/read', [\App\Http\Controllers\Admin\ContactMessageController::class, 'markRead'])->name('contact-messages.read');
+        Route::post('/contact-messages/{id}/unread', [\App\Http\Controllers\Admin\ContactMessageController::class, 'markUnread'])->name('contact-messages.unread');
+        Route::delete('/contact-messages/{id}', [\App\Http\Controllers\Admin\ContactMessageController::class, 'destroy'])->name('contact-messages.destroy');
+Route::get('/contact-messages', [\App\Http\Controllers\Admin\ContactMessageController::class, 'index'])->name('contact-messages.index');
+        Route::get('/contact-messages/{id}', [\App\Http\Controllers\Admin\ContactMessageController::class, 'show'])->name('contact-messages.show');
+        Route::post('/contact-messages/{id}/read', [\App\Http\Controllers\Admin\ContactMessageController::class, 'markRead'])->name('contact-messages.read');
+        Route::post('/contact-messages/{id}/unread', [\App\Http\Controllers\Admin\ContactMessageController::class, 'markUnread'])->name('contact-messages.unread');
+        Route::delete('/contact-messages/{id}', [\App\Http\Controllers\Admin\ContactMessageController::class, 'destroy'])->name('contact-messages.destroy');
+Route::get('/settings', [AdminSettingController::class, 'index'])->name('settings.index');
+        Route::post('/settings', [AdminSettingController::class, 'update'])->name('settings.update');
+
+        Route::post('/logout', [AdminAuthController::class, 'logout'])->name('logout');
+    });
+});
+
+/*
+|--------------------------------------------------------------------------
+| Frontend Routes
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/', [HomeController::class, 'index'])->name('home');
+
+Route::get('/hizmetler', [ServiceController::class, 'index'])->name('services.index');
+Route::get('/hizmetler/{slug}', [ServiceController::class, 'show'])->name('services.show');
+
+Route::get('/ekibimiz', [TeamController::class, 'index'])->name('team.index');
+Route::get('/ekibimiz/{slug}', [TeamController::class, 'show'])->name('team.show');
+
+Route::get('/blog', [BlogController::class, 'index'])->name('blog.index');
+Route::get('/blog/kategori/{slug}', [BlogController::class, 'category'])->name('blog.category');
+Route::get('/blog/{slug}', [BlogController::class, 'show'])->name('blog.show');
+
+Route::get('/iletisim', [ContactController::class, 'index'])->name('contact.index');
+Route::post('/iletisim', [ContactController::class, 'store'])->name('contact.store');
+
+/*
+|--------------------------------------------------------------------------
+| Dinamik Sayfa Route
+|--------------------------------------------------------------------------
+| Bu route en sonda kalmalı.
+|--------------------------------------------------------------------------
+*/
+
+/*
+|--------------------------------------------------------------------------
+| SEO Routes - Sitemap & Robots
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/robots.txt', function () {
+    $content = "User-agent: *\n";
+    $content .= "Allow: /\n";
+    $content .= "Disallow: /admin\n";
+    $content .= "Disallow: /login\n";
+    $content .= "\n";
+    $content .= "Sitemap: " . url('/sitemap.xml') . "\n";
+
+    return response($content, 200)
+        ->header('Content-Type', 'text/plain; charset=UTF-8');
+})->name('robots');
+
+Route::get('/sitemap.xml', function () {
+    $urls = [];
+
+    $addUrl = function (string $loc, string $priority = '0.80', string $changefreq = 'weekly', ?string $lastmod = null) use (&$urls) {
+        $urls[] = [
+            'loc' => url($loc),
+            'priority' => $priority,
+            'changefreq' => $changefreq,
+            'lastmod' => $lastmod ?: date('Y-m-d'),
+        ];
+    };
+
+    $tableExists = function (string $table): bool {
+        try {
+            return \Illuminate\Support\Facades\Schema::hasTable($table);
+        } catch (\Throwable $e) {
+            return false;
+        }
+    };
+
+    $columnExists = function (string $table, string $column): bool {
+        try {
+            return \Illuminate\Support\Facades\Schema::hasColumn($table, $column);
+        } catch (\Throwable $e) {
+            return false;
+        }
+    };
+
+    /*
+    |--------------------------------------------------------------------------
+    | Sabit URL'ler
+    |--------------------------------------------------------------------------
+    */
+
+    $addUrl('/', '1.00', 'daily');
+    $addUrl('/hizmetler', '0.90', 'weekly');
+    $addUrl('/blog', '0.85', 'weekly');
+    $addUrl('/ekibimiz', '0.75', 'monthly');
+    $addUrl('/iletisim', '0.80', 'monthly');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Dinamik Sayfalar
+    |--------------------------------------------------------------------------
+    */
+
+    if ($tableExists('pages')) {
+        try {
+            $query = \Illuminate\Support\Facades\DB::table('pages');
+
+            if ($columnExists('pages', 'is_active')) {
+                $query->where('is_active', 1);
+            }
+
+            if ($columnExists('pages', 'slug')) {
+                $pages = $query->select('slug', 'updated_at')->get();
+
+                foreach ($pages as $page) {
+                    if (empty($page->slug)) {
+                        continue;
+                    }
+
+                    $reserved = ['hizmetler', 'blog', 'ekibimiz', 'iletisim'];
+
+                    if (in_array($page->slug, $reserved, true)) {
+                        continue;
+                    }
+
+                    $lastmod = !empty($page->updated_at) ? date('Y-m-d', strtotime($page->updated_at)) : null;
+                    $addUrl('/' . ltrim($page->slug, '/'), '0.80', 'monthly', $lastmod);
+                }
+            }
+        } catch (\Throwable $e) {
+            //
+        }
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Hizmet Detayları
+    |--------------------------------------------------------------------------
+    */
+
+    if ($tableExists('services')) {
+        try {
+            $query = \Illuminate\Support\Facades\DB::table('services');
+
+            if ($columnExists('services', 'is_active')) {
+                $query->where('is_active', 1);
+            }
+
+            if ($columnExists('services', 'slug')) {
+                $services = $query->select('slug', 'updated_at')->get();
+
+                foreach ($services as $service) {
+                    if (empty($service->slug)) {
+                        continue;
+                    }
+
+                    $lastmod = !empty($service->updated_at) ? date('Y-m-d', strtotime($service->updated_at)) : null;
+                    $addUrl('/hizmetler/' . ltrim($service->slug, '/'), '0.85', 'monthly', $lastmod);
+                }
+            }
+        } catch (\Throwable $e) {
+            //
+        }
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Blog Yazıları
+    |--------------------------------------------------------------------------
+    */
+
+    if ($tableExists('posts')) {
+        try {
+            $query = \Illuminate\Support\Facades\DB::table('posts');
+
+            if ($columnExists('posts', 'is_active')) {
+                $query->where('is_active', 1);
+            }
+
+            if ($columnExists('posts', 'slug')) {
+                $posts = $query->select('slug', 'updated_at')->get();
+
+                foreach ($posts as $post) {
+                    if (empty($post->slug)) {
+                        continue;
+                    }
+
+                    $lastmod = !empty($post->updated_at) ? date('Y-m-d', strtotime($post->updated_at)) : null;
+                    $addUrl('/blog/' . ltrim($post->slug, '/'), '0.80', 'weekly', $lastmod);
+                }
+            }
+        } catch (\Throwable $e) {
+            //
+        }
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Blog Kategorileri
+    |--------------------------------------------------------------------------
+    */
+
+    if ($tableExists('post_categories')) {
+        try {
+            $query = \Illuminate\Support\Facades\DB::table('post_categories');
+
+            if ($columnExists('post_categories', 'is_active')) {
+                $query->where('is_active', 1);
+            }
+
+            if ($columnExists('post_categories', 'slug')) {
+                $categories = $query->select('slug', 'updated_at')->get();
+
+                foreach ($categories as $category) {
+                    if (empty($category->slug)) {
+                        continue;
+                    }
+
+                    $lastmod = !empty($category->updated_at) ? date('Y-m-d', strtotime($category->updated_at)) : null;
+                    $addUrl('/blog/kategori/' . ltrim($category->slug, '/'), '0.65', 'monthly', $lastmod);
+                }
+            }
+        } catch (\Throwable $e) {
+            //
+        }
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Ekip Üyeleri
+    |--------------------------------------------------------------------------
+    */
+
+    if ($tableExists('team_members')) {
+        try {
+            $query = \Illuminate\Support\Facades\DB::table('team_members');
+
+            if ($columnExists('team_members', 'is_active')) {
+                $query->where('is_active', 1);
+            }
+
+            if ($columnExists('team_members', 'slug')) {
+                $members = $query->select('slug', 'updated_at')->get();
+
+                foreach ($members as $member) {
+                    if (empty($member->slug)) {
+                        continue;
+                    }
+
+                    $lastmod = !empty($member->updated_at) ? date('Y-m-d', strtotime($member->updated_at)) : null;
+                    $addUrl('/ekibimiz/' . ltrim($member->slug, '/'), '0.65', 'monthly', $lastmod);
+                }
+            }
+        } catch (\Throwable $e) {
+            //
+        }
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | XML üret
+    |--------------------------------------------------------------------------
+    */
+
+    $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
+    $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
+
+    foreach ($urls as $url) {
+        $xml .= "    <url>\n";
+        $xml .= "        <loc>" . e($url['loc']) . "</loc>\n";
+        $xml .= "        <lastmod>" . e($url['lastmod']) . "</lastmod>\n";
+        $xml .= "        <changefreq>" . e($url['changefreq']) . "</changefreq>\n";
+        $xml .= "        <priority>" . e($url['priority']) . "</priority>\n";
+        $xml .= "    </url>\n";
+    }
+
+    $xml .= '</urlset>';
+
+    return response($xml, 200)
+        ->header('Content-Type', 'application/xml; charset=UTF-8');
+})->name('sitemap');
+
+
+
+// media-picker-routes-start
+\Illuminate\Support\Facades\Route::middleware([
+        'web',
+        \App\Http\Middleware\AdminAuth::class,
+    ])
+    ->prefix('admin')
+    ->name('admin.')
+    ->group(function () {
+        \Illuminate\Support\Facades\Route::get('/media', [\App\Http\Controllers\Admin\MediaController::class, 'index'])->name('media.index');
+        \Illuminate\Support\Facades\Route::post('/media', [\App\Http\Controllers\Admin\MediaController::class, 'store'])->name('media.store');
+        \Illuminate\Support\Facades\Route::post('/media/delete', [\App\Http\Controllers\Admin\MediaController::class, 'delete'])->name('media.delete');
+        \Illuminate\Support\Facades\Route::get('/media-picker', [\App\Http\Controllers\Admin\MediaController::class, 'picker'])->name('media.picker');
+        \Illuminate\Support\Facades\Route::post('/media/upload-optimized', [\App\Http\Controllers\Admin\MediaController::class, 'uploadOptimized'])->name('media.upload_optimized');
+    });
+// media-picker-routes-end
+
+// admin-root-redirect-start
+\Illuminate\Support\Facades\Route::get('/admin', function () {
+    return redirect()->route('admin.login');
+})->name('admin.root');
+// admin-root-redirect-end
+
+// duplicate-content-routes-start
+\Illuminate\Support\Facades\Route::middleware([
+        'web',
+        \App\Http\Middleware\AdminAuth::class,
+    ])
+    ->prefix('admin')
+    ->name('admin.')
+    ->group(function () {
+        \Illuminate\Support\Facades\Route::post('/duplicate/{type}/{id}', [\App\Http\Controllers\Admin\DuplicateContentController::class, 'duplicate'])
+            ->whereNumber('id')
+            ->name('duplicate.content');
+    });
+// duplicate-content-routes-end
+
+// preview-content-routes-start
+\Illuminate\Support\Facades\Route::middleware([
+        'web',
+        \App\Http\Middleware\AdminAuth::class,
+    ])
+    ->prefix('admin')
+    ->name('admin.')
+    ->group(function () {
+        \Illuminate\Support\Facades\Route::get('/preview/{type}/{id}', [\App\Http\Controllers\Admin\PreviewContentController::class, 'show'])
+            ->whereNumber('id')
+            ->name('preview.content');
+    });
+// preview-content-routes-end
+
+// usage-guide-routes-start
+\Illuminate\Support\Facades\Route::middleware([
+        'web',
+        \App\Http\Middleware\AdminAuth::class,
+    ])
+    ->prefix('admin')
+    ->name('admin.')
+    ->group(function () {
+        \Illuminate\Support\Facades\Route::get('/usage-guide', [\App\Http\Controllers\Admin\UsageGuideController::class, 'index'])
+            ->name('usage-guide.index');
+    });
+// usage-guide-routes-end
+
+// setup-checklist-routes-start
+\Illuminate\Support\Facades\Route::middleware([
+        'web',
+        \App\Http\Middleware\AdminAuth::class,
+    ])
+    ->prefix('admin')
+    ->name('admin.')
+    ->group(function () {
+        \Illuminate\Support\Facades\Route::get('/setup-checklist', [\App\Http\Controllers\Admin\SetupChecklistController::class, 'index'])
+            ->name('setup-checklist.index');
+
+        \Illuminate\Support\Facades\Route::post('/setup-checklist/complete', [\App\Http\Controllers\Admin\SetupChecklistController::class, 'complete'])
+            ->name('setup-checklist.complete');
+
+        \Illuminate\Support\Facades\Route::post('/setup-checklist/reopen', [\App\Http\Controllers\Admin\SetupChecklistController::class, 'reopen'])
+            ->name('setup-checklist.reopen');
+    });
+// setup-checklist-routes-end
+
+// admin-users-routes-start
+\Illuminate\Support\Facades\Route::middleware([
+        'web',
+        \App\Http\Middleware\AdminAuth::class,
+    ])
+    ->prefix('admin')
+    ->name('admin.')
+    ->group(function () {
+        \Illuminate\Support\Facades\Route::get('/users', [\App\Http\Controllers\Admin\AdminUserController::class, 'index'])
+            ->name('users.index');
+
+        \Illuminate\Support\Facades\Route::get('/users/create', [\App\Http\Controllers\Admin\AdminUserController::class, 'create'])
+            ->name('users.create');
+
+        \Illuminate\Support\Facades\Route::post('/users', [\App\Http\Controllers\Admin\AdminUserController::class, 'store'])
+            ->name('users.store');
+
+        \Illuminate\Support\Facades\Route::get('/users/{id}/edit', [\App\Http\Controllers\Admin\AdminUserController::class, 'edit'])
+            ->whereNumber('id')
+            ->name('users.edit');
+
+        \Illuminate\Support\Facades\Route::put('/users/{id}', [\App\Http\Controllers\Admin\AdminUserController::class, 'update'])
+            ->whereNumber('id')
+            ->name('users.update');
+
+        \Illuminate\Support\Facades\Route::post('/users/{id}/toggle', [\App\Http\Controllers\Admin\AdminUserController::class, 'toggle'])
+            ->whereNumber('id')
+            ->name('users.toggle');
+    });
+// admin-users-routes-end
+
+// login-attempts-routes-start
+\Illuminate\Support\Facades\Route::middleware([
+        'web',
+        \App\Http\Middleware\AdminAuth::class,
+    ])
+    ->prefix('admin')
+    ->name('admin.')
+    ->group(function () {
+        \Illuminate\Support\Facades\Route::get('/login-attempts', [\App\Http\Controllers\Admin\LoginAttemptController::class, 'index'])
+            ->name('login-attempts.index');
+    });
+// login-attempts-routes-end
+
+Route::get('/{slug}', [PageController::class, 'show'])->name('pages.show');
+
+
