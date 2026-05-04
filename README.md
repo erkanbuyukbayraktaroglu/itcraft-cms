@@ -1,403 +1,425 @@
-# Admin Panel Kullanım Kılavuzu
+# Kurulum Checklist
 
-Bu doküman, web sitesi yönetim panelinin temel kullanım adımlarını anlatmak için hazırlanmıştır.
+Bu doküman, Laravel tabanlı yönetim panelli web sitesi projesinin yeni müşteri/domain üzerine kurulumu sırasında takip edilmesi gereken adımları içerir.
 
-Panel üzerinden site ayarları, sayfalar, hizmetler, blog yazıları, medya dosyaları, slider alanları, menüler, iletişim mesajları ve e-posta bildirim ayarları yönetilebilir.
+Amaç; her kurulumda aynı standartla ilerlemek, eksik ayar bırakmamak ve canlıya geçiş öncesi güvenlik kontrollerini tamamlamaktır.
 
 ---
 
 ## İçindekiler
 
-1. Admin Paneline Giriş  
-2. Dashboard Ekranı  
-3. Site Ayarları  
-4. Medya Yönetimi  
-5. Sayfa Yönetimi  
-6. Hizmet Yönetimi  
-7. Blog Yönetimi  
-8. Slider Yönetimi  
-9. Menü Yönetimi  
-10. İletişim Mesajları  
-11. SMTP / E-posta Bildirim Ayarları  
-12. SEO Yönetimi  
-13. Sitemap ve Robots  
-14. Backup / Export  
-15. Güvenlik Notları  
-16. Sık Karşılaşılan Sorunlar  
-17. Önerilen Görsel Ölçüleri  
-18. İçerik Giriş Önerileri  
-19. Yayına Alma Kontrol Listesi  
-20. Destek Notları  
+1. Kurulum Öncesi Hazırlık  
+2. Sunucu Gereksinimleri  
+3. Dosya Yapısı Kontrolü  
+4. Domain ve Hosting Hazırlığı  
+5. Dosyaların Sunucuya Yüklenmesi  
+6. `.env` Ayarları  
+7. Veritabanı Kurulumu  
+8. İlk Admin Kullanıcı Kontrolü  
+9. `.htaccess` Kontrolü  
+10. Storage ve Cache İzinleri  
+11. Admin Panel İlk Giriş  
+12. Site Ayarları İlk Kurulum  
+13. Logo ve Görsel Ayarları  
+14. Menü Ayarları  
+15. Slider Ayarları  
+16. Sayfa / Hizmet / Blog Kontrolü  
+17. Medya Yönetimi Kontrolü  
+18. SMTP Ayarları  
+19. SEO / Sitemap / Robots Kontrolü  
+20. Güvenlik Kontrolleri  
+21. Geçici Script Temizliği  
+22. Final Canlı Kontrol  
+23. Müşteri Teslim Kontrolü  
+24. Kurulum Sonrası Bakım Notları  
+25. Hızlı Kurulum Özeti  
+26. Son Not  
 
 ---
 
-# 1. Admin Paneline Giriş
+# 1. Kurulum Öncesi Hazırlık
 
-Admin paneline erişmek için tarayıcı üzerinden aşağıdaki adres kullanılır:
+Kuruluma başlamadan önce aşağıdaki bilgiler hazır olmalıdır:
+
+- Domain adı
+- Hosting panel erişimi
+- FTP / SFTP bilgileri
+- Veritabanı adı
+- Veritabanı kullanıcı adı
+- Veritabanı şifresi
+- Admin kullanıcı bilgileri
+- SMTP bilgileri
+- Logo dosyaları
+- Favicon
+- Kurumsal renk kodları
+- Sosyal medya linkleri
+- İletişim bilgileri
+- İlk açılışta kullanılacak slider görselleri
+- Temel sayfa içerikleri
+- Hizmet listesi
+- Blog kategorileri
+
+---
+
+# 2. Sunucu Gereksinimleri
+
+Sunucuda aşağıdaki gereksinimler kontrol edilmelidir:
+
+| Gereksinim | Durum |
+|---|---|
+| PHP 8.2 veya üzeri | Kontrol edilmeli |
+| MySQL / MariaDB | Kontrol edilmeli |
+| Apache mod_rewrite | Aktif olmalı |
+| PDO | Aktif olmalı |
+| PDO MySQL | Aktif olmalı |
+| OpenSSL | Aktif olmalı |
+| Mbstring | Aktif olmalı |
+| Tokenizer | Aktif olmalı |
+| XML | Aktif olmalı |
+| Ctype | Aktif olmalı |
+| JSON | Aktif olmalı |
+| Fileinfo | Aktif olmalı |
+| GD | Görsel optimizasyon için aktif olmalı |
+
+Özellikle medya optimizasyonu için `gd` eklentisi önemlidir.
+
+---
+
+# 3. Dosya Yapısı Kontrolü
+
+Proje dosya yapısı genel olarak aşağıdaki gibi olmalıdır:
 
 ```text
-https://domain-adresi.com/admin
+/public_html
+    /app
+    /bootstrap
+    /config
+    /database
+    /docs
+    /public
+    /resources
+    /routes
+    /storage
+    /vendor
+    .env
+    artisan
+    composer.json
+    composer.lock
 ```
 
-Sistem kullanıcıyı otomatik olarak giriş ekranına yönlendirir.
+Web kökü cPanel üzerinde `public_html` olabilir. Laravel uygulaması ise `/public` klasörü üzerinden çalışmalıdır.
 
-Giriş ekranında kullanıcı adı/e-posta ve şifre bilgileri girilerek panele erişilir.
+URL’de `/public` görünmemelidir.
 
-> Güvenlik için admin şifresi düzenli aralıklarla değiştirilmelidir.
+Doğru kullanım:
 
----
+```text
+https://domain.com
+https://domain.com/admin
+```
 
-# 2. Dashboard Ekranı
+Yanlış kullanım:
 
-Giriş yaptıktan sonra ilk açılan ekran dashboard alanıdır.
-
-Bu ekranda genel olarak şu bilgilere ulaşılabilir:
-
-- Toplam sayfa sayısı
-- Toplam hizmet sayısı
-- Blog yazıları
-- Gelen iletişim mesajları
-- Hızlı erişim bağlantıları
-
-Dashboard ekranı, paneldeki ana bölümlere hızlı geçiş yapmak için kullanılabilir.
+```text
+https://domain.com/public
+https://domain.com/public/admin
+```
 
 ---
 
-# 3. Site Ayarları
+# 4. Domain ve Hosting Hazırlığı
 
-Site ayarları bölümünden web sitesinin genel bilgileri yönetilir.
+Kurulum yapılacak domain hosting panelinde doğru dizine yönlendirilmelidir.
 
-Bu bölümde düzenlenebilecek temel alanlar:
+Kontrol edilecekler:
+
+- Domain doğru hosting hesabına bağlı mı?
+- SSL aktif mi?
+- PHP sürümü doğru mu?
+- `public_html` dizini doğru mu?
+- Eski site dosyaları yedeklendi mi?
+- Eski `.htaccess` dosyası varsa kontrol edildi mi?
+
+---
+
+# 5. Dosyaların Sunucuya Yüklenmesi
+
+Proje dosyaları sunucuya yüklendikten sonra şu kontroller yapılmalıdır:
+
+- Tüm klasörler eksiksiz yüklendi mi?
+- `.env` dosyası mevcut mu?
+- `vendor` klasörü mevcut mu?
+- `storage` klasörü mevcut mu?
+- `bootstrap/cache` klasörü mevcut mu?
+- `public/uploads` klasörü mevcut mu?
+- `public/uploads/media` klasörü mevcut mu?
+
+Eğer `vendor` klasörü yoksa Composer kurulumu gerekir.
+
+Paylaşımlı hosting ortamında Composer çalıştırılamıyorsa, proje local ortamda hazırlanıp `vendor` klasörüyle birlikte yüklenmelidir.
+
+---
+
+# 6. `.env` Ayarları
+
+`.env` dosyasında aşağıdaki alanlar kontrol edilmelidir:
+
+```env
+APP_NAME="Website"
+APP_ENV=production
+APP_KEY=
+APP_DEBUG=false
+APP_URL=https://domain.com
+
+DB_CONNECTION=mysql
+DB_HOST=localhost
+DB_PORT=3306
+DB_DATABASE=database_name
+DB_USERNAME=database_user
+DB_PASSWORD=database_password
+
+SESSION_DRIVER=database
+CACHE_STORE=file
+QUEUE_CONNECTION=sync
+```
+
+## 6.1 APP_KEY Kontrolü
+
+`APP_KEY` boş olmamalıdır.
+
+Boşsa Laravel komutu ile oluşturulmalıdır:
+
+```bash
+php artisan key:generate
+```
+
+Paylaşımlı hostingte artisan çalıştırılamıyorsa APP_KEY local ortamda üretilip `.env` içine yazılabilir.
+
+## 6.2 APP_DEBUG Kontrolü
+
+Canlı ortamda mutlaka şu şekilde olmalıdır:
+
+```env
+APP_DEBUG=false
+```
+
+## 6.3 APP_ENV Kontrolü
+
+Canlı ortamda şu şekilde olmalıdır:
+
+```env
+APP_ENV=production
+```
+
+## 6.4 APP_URL Kontrolü
+
+Domain doğru yazılmalıdır:
+
+```env
+APP_URL=https://domain.com
+```
+
+Sonunda `/` bırakılmaması önerilir.
+
+---
+
+# 7. Veritabanı Kurulumu
+
+Veritabanı kurulumunda aşağıdaki adımlar izlenir:
+
+1. Hosting panelinden yeni MySQL veritabanı oluşturulur.
+2. Veritabanı kullanıcısı oluşturulur.
+3. Kullanıcıya ilgili veritabanı için tüm yetkiler verilir.
+4. `.env` dosyasına DB bilgileri yazılır.
+5. SQL dump dosyası içe aktarılır.
+6. Tablolar kontrol edilir.
+
+Kontrol edilecek temel tablolar:
+
+- users
+- site_settings
+- pages
+- services
+- posts
+- post_categories
+- sliders
+- menus
+- contact_messages
+- sessions
+
+Eksik tablo varsa kurulum SQL dosyası tekrar kontrol edilmelidir.
+
+---
+
+# 8. İlk Admin Kullanıcı Kontrolü
+
+Kurulumdan sonra admin kullanıcısı kontrol edilmelidir.
+
+Kontrol edilecekler:
+
+- Admin kullanıcısı mevcut mu?
+- E-posta adresi doğru mu?
+- Şifre biliniyor mu?
+- Kullanıcı aktif mi?
+- Rol/yetki alanı varsa doğru mu?
+
+Varsayılan admin bilgileri kurulumdan sonra mutlaka değiştirilmelidir.
+
+Örnek güvenli işlem:
+
+```text
+Kurulum sonrası geçici admin şifresi değiştirilir.
+Müşteriye yeni şifre güvenli kanaldan iletilir.
+Varsayılan/test kullanıcıları silinir.
+```
+
+---
+
+# 9. `.htaccess` Kontrolü
+
+Projede iki önemli `.htaccess` dosyası bulunur.
+
+```text
+/public_html/.htaccess
+/public_html/public/.htaccess
+```
+
+## 9.1 Root `.htaccess`
+
+Root `.htaccess` dosyası şu görevleri yapmalıdır:
+
+- Laravel’i `/public` klasöründen çalıştırmak
+- URL’de `/public` görünmesini engellemek
+- `.env` gibi hassas dosyalara erişimi engellemek
+- `app`, `storage`, `vendor` gibi klasörleri dış erişime kapatmak
+
+Kontrol:
+
+```text
+https://domain.com/.env
+```
+
+Beklenen sonuç:
+
+```text
+403 Forbidden
+```
+
+veya erişim engeli.
+
+## 9.2 Public `.htaccess`
+
+Public `.htaccess` dosyası şu görevleri yapmalıdır:
+
+- Laravel route sistemini çalıştırmak
+- Gerçek dosyaları doğrudan servis etmek
+- Directory listing’i kapatmak
+- `index.php` yönlendirmesini yapmak
+
+Kontrol:
+
+```text
+https://domain.com/admin
+```
+
+Beklenen:
+
+```text
+/admin/login
+```
+
+veya admin giriş ekranı.
+
+---
+
+# 10. Storage ve Cache İzinleri
+
+Aşağıdaki klasörlerin yazılabilir olduğundan emin olunmalıdır:
+
+```text
+storage
+storage/framework
+storage/framework/views
+storage/logs
+bootstrap/cache
+public/uploads
+public/uploads/media
+```
+
+Paylaşımlı hosting ortamında genellikle `755` yeterlidir. Sorun yaşanırsa hosting panel izinleri kontrol edilmelidir.
+
+---
+
+# 11. Admin Panel İlk Giriş
+
+Admin panel giriş adresi:
+
+```text
+https://domain.com/admin
+```
+
+Alternatif:
+
+```text
+https://domain.com/admin/login
+```
+
+Kontrol edilecekler:
+
+- Login ekranı açılıyor mu?
+- Giriş yapılabiliyor mu?
+- Dashboard açılıyor mu?
+- Menü linkleri çalışıyor mu?
+- Çıkış yapılabiliyor mu?
+
+---
+
+# 12. Site Ayarları İlk Kurulum
+
+Admin panelde **Site Ayarları** bölümüne girilerek aşağıdaki alanlar doldurulmalıdır:
 
 - Site adı
 - Site sloganı
 - Site açıklaması
-- Header logosu
-- Footer logosu
+- Header logo
+- Footer logo
 - Favicon
-- İletişim e-posta adresi
-- Telefon numarası
-- Adres bilgisi
+- Telefon
+- E-posta
+- Adres
 - Çalışma saatleri
-- Sosyal medya bağlantıları
-- SEO varsayılan bilgileri
-- SMTP/e-posta gönderim ayarları
+- Sosyal medya linkleri
+- Ana renkler
+- Varsayılan SEO bilgileri
+
+Bu alanlar doldurulmadan site teslim edilmemelidir.
 
 ---
 
-## 3.1 Logo Yönetimi
+# 13. Logo ve Görsel Ayarları
 
-Header ve footer için ayrı logo tanımlanabilir.
+Logo dosyaları medya yönetimi üzerinden yüklenmelidir.
 
-Örnek kullanım:
+Önerilen logo formatları:
 
 ```text
-Header Logo: Açık zemin üzerinde görünür logo
-Footer Logo: Koyu zemin üzerinde görünür logo
+SVG
+PNG
+WebP
 ```
 
-Medya yönetimi üzerinden logo yüklenip ilgili URL veya path alanına eklenebilir.
+Kontrol edilecekler:
+
+- Header logosu açık zeminde görünüyor mu?
+- Footer logosu koyu zeminde görünüyor mu?
+- Mobil menüde logo düzgün mü?
+- Favicon tarayıcı sekmesinde görünüyor mu?
 
 ---
 
-## 3.2 Renk Ayarları
+# 14. Menü Ayarları
 
-Panelde tanımlı renk alanları üzerinden sitenin ana renkleri düzenlenebilir.
-
-Genellikle şu alanlar kullanılır:
-
-- Ana renk
-- İkincil renk
-- Vurgu rengi
-- Arka plan rengi
-- Yazı rengi
-- Header rengi
-- Footer rengi
-- Buton rengi
-
-Renk değişikliklerinden sonra site ön yüzü kontrol edilmelidir.
-
----
-
-# 4. Medya Yönetimi
-
-Medya yönetimi bölümü görsel ve dosya yüklemek için kullanılır.
-
-Desteklenen örnek dosya türleri:
-
-- JPG
-- JPEG
-- PNG
-- WebP
-- GIF
-- SVG
-- PDF
-- Office dokümanları
-
-Görsel yükleme sırasında sistem JPG, PNG ve WebP dosyalarını otomatik optimize eder. Büyük görseller maksimum genişlik/yükseklik değerlerine göre küçültülür.
-
----
-
-## 4.1 Görsel Yükleme
-
-1. Admin panelden **Medya Yönetimi** bölümüne girilir.
-2. **Dosya Seç** alanından dosya seçilir.
-3. **Yükle** butonuna basılır.
-4. Sistem dosyayı yükler ve kullanılabilir URL bilgisini gösterir.
-
----
-
-## 4.2 URL ve Path Kullanımı
-
-Medya ekranında iki farklı kullanım bilgisi görülebilir:
-
-```text
-Tam URL:
-https://domain-adresi.com/uploads/media/2026/04/ornek-gorsel.jpg
-
-Relative Path:
-uploads/media/2026/04/ornek-gorsel.jpg
-```
-
-Genel kullanımda **Tam URL** tercih edilebilir.
-
-Site başka bir domaine taşınacaksa relative path daha taşınabilir bir kullanım sağlar.
-
----
-
-## 4.3 Medyadan Seç Özelliği
-
-Sayfa, hizmet, blog, slider veya ayarlar ekranlarında görsel alanlarının altında **Medyadan Seç** butonu bulunabilir.
-
-Kullanım:
-
-1. Görsel alanındaki **Medyadan Seç** butonuna tıklanır.
-2. Açılan pencereden dosya seçilir.
-3. Seçilen dosyanın URL/path bilgisi otomatik olarak ilgili alana yazılır.
-4. Form kaydedilir.
-
----
-
-# 5. Sayfa Yönetimi
-
-Sayfa yönetimi bölümü kurumsal içerik sayfalarını oluşturmak için kullanılır.
-
-Örnek sayfalar:
-
-- Hakkımızda
-- Hizmetler
-- KVKK
-- Gizlilik Politikası
-- Sıkça Sorulan Sorular
-- Kurumsal Bilgiler
-
----
-
-## 5.1 Yeni Sayfa Ekleme
-
-1. Admin panelden **Sayfalar** bölümüne girilir.
-2. **Yeni Ekle** butonuna tıklanır.
-3. Sayfa başlığı yazılır.
-4. Slug alanı otomatik oluşturulur veya manuel düzenlenir.
-5. İçerik editörü ile sayfa içeriği hazırlanır.
-6. SEO alanları doldurulur.
-7. Gerekirse görsel seçilir.
-8. **Kaydet** butonuna basılır.
-
----
-
-## 5.2 Slug Kullanımı
-
-Slug, sayfanın URL yapısını belirler.
-
-Örnek:
-
-```text
-Başlık: KVKK Danışmanlığı ve Uyum Süreci
-Slug: kvkk-danismanligi-ve-uyum-sureci
-URL: https://domain-adresi.com/kvkk-danismanligi-ve-uyum-sureci
-```
-
-Slug alanında Türkçe karakter, boşluk ve özel karakter kullanılmamalıdır. Sistem genellikle bunları otomatik dönüştürür.
-
----
-
-## 5.3 İçerik Editörü
-
-Sayfa içerik alanında zengin metin editörü bulunur.
-
-Bu editör ile:
-
-- Başlık eklenebilir
-- Kalın/italik yazı kullanılabilir
-- Liste oluşturulabilir
-- Link eklenebilir
-- Tablo eklenebilir
-- Alıntı/blok içerik girilebilir
-
-İçerik kaydedildikten sonra ön yüzde kontrol edilmelidir.
-
----
-
-## 5.4 Sayfa Kopyalama
-
-Sayfa listesinde bulunan **Kopyala** butonu ile mevcut bir sayfanın kopyası oluşturulabilir.
-
-Kopyalanan sayfanın başlığına “Kopya” eklenir ve slug değeri benzersiz hale getirilir.
-
----
-
-## 5.5 Sayfa Önizleme
-
-Sayfa listesinde bulunan **Önizle** butonu ile ilgili sayfanın ön yüzde nasıl göründüğü yeni sekmede kontrol edilebilir.
-
----
-
-# 6. Hizmet Yönetimi
-
-Hizmet yönetimi bölümü, web sitesinde sunulan hizmetleri düzenlemek için kullanılır.
-
-Örnek hizmetler:
-
-- Danışmanlık
-- Hukuki Hizmetler
-- Kurumsal Destek
-- Teknik Servis
-- Proje Yönetimi
-
----
-
-## 6.1 Yeni Hizmet Ekleme
-
-1. **Hizmetler** bölümüne girilir.
-2. **Yeni Ekle** butonuna tıklanır.
-3. Hizmet başlığı yazılır.
-4. Slug alanı kontrol edilir.
-5. Hizmet açıklaması ve detay içeriği girilir.
-6. Görsel varsa medya yönetimi üzerinden seçilir.
-7. SEO alanları doldurulur.
-8. Kaydedilir.
-
----
-
-## 6.2 Hizmet Önizleme
-
-Hizmet listesinde **Önizle** butonu ile hizmetin ön yüzdeki görünümü kontrol edilebilir.
-
-Örnek URL yapısı:
-
-```text
-https://domain-adresi.com/hizmetler/hizmet-slug
-```
-
----
-
-## 6.3 Hizmet Kopyalama
-
-Benzer içerikte yeni hizmet oluşturmak için **Kopyala** butonu kullanılabilir.
-
-Bu özellik özellikle aynı şablonda ilerleyen hizmet sayfalarında zaman kazandırır.
-
----
-
-# 7. Blog Yönetimi
-
-Blog bölümü haber, makale, duyuru ve içerik yayınlamak için kullanılır.
-
----
-
-## 7.1 Blog Kategorileri
-
-Blog yazılarının düzenli görünmesi için önce kategori oluşturulabilir.
-
-Örnek kategoriler:
-
-- Haberler
-- Duyurular
-- Makaleler
-- Rehberler
-- Güncellemeler
-
-Kategori oluştururken kategori adı ve slug bilgisi kontrol edilmelidir.
-
----
-
-## 7.2 Blog Yazısı Ekleme
-
-1. **Blog Yazıları** bölümüne girilir.
-2. **Yeni Ekle** butonuna tıklanır.
-3. Yazı başlığı yazılır.
-4. Kategori seçilir.
-5. Slug alanı kontrol edilir.
-6. İçerik editörü ile yazı hazırlanır.
-7. Kapak görseli seçilir.
-8. SEO alanları doldurulur.
-9. Yayın durumu kontrol edilir.
-10. Kaydedilir.
-
----
-
-## 7.3 Blog Önizleme
-
-Blog listesinde bulunan **Önizle** butonu ile yazının ön yüzdeki görünümü kontrol edilebilir.
-
-Örnek URL yapısı:
-
-```text
-https://domain-adresi.com/blog/yazi-slug
-```
-
----
-
-## 7.4 Blog Yazısı Kopyalama
-
-Benzer formatta yeni yazı oluşturmak için **Kopyala** butonu kullanılabilir.
-
-Sistem slug çakışmasını engellemek için yeni slug üretir.
-
----
-
-# 8. Slider Yönetimi
-
-Slider bölümü ana sayfadaki büyük görsel alanlarını yönetmek için kullanılır.
-
-Slider eklerken dikkat edilmesi gerekenler:
-
-- Görsel kaliteli olmalıdır.
-- Önerilen ölçü: **1920 x 800 px**
-- Başlık kısa ve net olmalıdır.
-- Açıklama metni fazla uzun olmamalıdır.
-- Buton metni ve linki doğru girilmelidir.
-- Mobil görünüm mutlaka kontrol edilmelidir.
-
----
-
-## 8.1 Slider Görseli Ekleme
-
-1. Medya yönetiminden slider görseli yüklenir.
-2. Slider ekleme/düzenleme ekranında görsel alanına medya URL’si seçilir.
-3. Başlık, açıklama ve buton bilgileri girilir.
-4. Sıralama ve aktif/pasif durumu kontrol edilir.
-5. Kaydedilir.
-
----
-
-# 9. Menü Yönetimi
-
-Menü yönetimi ile header ve footer menüleri düzenlenebilir.
-
-Menü öğelerinde genellikle şu bilgiler bulunur:
-
-- Menü başlığı
-- URL
-- Hedef pencere
-- Sıralama
-- Aktif/pasif durumu
-- Üst menü ilişkisi
-
----
-
-## 9.1 Menü Link Örnekleri
+Menü yönetiminde temel linkler kontrol edilmelidir:
 
 ```text
 Anasayfa: /
@@ -405,282 +427,305 @@ Hakkımızda: /hakkimizda
 Hizmetler: /hizmetler
 Blog: /blog
 İletişim: /iletisim
-Dış bağlantı: https://ornek-domain.com
 ```
 
-URL alanı doğru girilmelidir.
+Kontrol edilecekler:
 
-Site içi bağlantılarda `/` ile başlayan kısa yollar kullanılabilir.
-
----
-
-# 10. İletişim Mesajları
-
-Web sitesindeki iletişim formundan gönderilen mesajlar admin panelde listelenir.
-
-Mesaj detayında şu bilgiler görülebilir:
-
-- Ad soyad
-- E-posta
-- Telefon
-- Konu
-- Mesaj
-- Gönderim tarihi
-- IP adresi
-- User-Agent
-- Referer
-- Kaynak URL
+- Header menüsü doğru mu?
+- Footer menüsü doğru mu?
+- Linkler çalışıyor mu?
+- Dış bağlantılar yeni sekmede açılıyor mu?
+- Mobil menü düzgün çalışıyor mu?
 
 ---
 
-## 10.1 Mesaj Okundu/Okunmadı İşlemi
+# 15. Slider Ayarları
 
-Mesajlar okundu veya okunmadı olarak işaretlenebilir.
+Ana sayfa slider alanı kontrol edilmelidir.
 
-Bu özellik, takip edilen mesajların ayrılmasını kolaylaştırır.
-
----
-
-## 10.2 Mesaja E-posta ile Yanıt Verme
-
-Mesaj detayında e-posta adresi varsa mailto bağlantısı üzerinden kullanıcıya yanıt verilebilir.
-
----
-
-# 11. SMTP / E-posta Bildirim Ayarları
-
-İletişim formu gönderildiğinde belirlenen adrese e-posta bildirimi gitmesi için SMTP ayarları yapılmalıdır.
-
-Genel SMTP alanları:
+Önerilen slider görsel ölçüsü:
 
 ```text
-SMTP Host
-SMTP Port
-SMTP Kullanıcı Adı
-SMTP Şifre
+1920 x 800 px
+```
+
+Kontrol edilecekler:
+
+- Slider görseli yüklendi mi?
+- Başlık doğru mu?
+- Açıklama doğru mu?
+- Buton metni doğru mu?
+- Buton linki doğru mu?
+- Sıralama doğru mu?
+- Mobil görünüm bozuluyor mu?
+
+---
+# 16. Sayfa / Hizmet / Blog Kontrolü
+
+Kurulum sonrası örnek içerikler kontrol edilmelidir.
+
+## 16.1 Sayfalar
+
+Kontrol edilecekler:
+
+- Hakkımızda sayfası var mı?
+- İletişim sayfası var mı?
+- KVKK / Gizlilik sayfası var mı?
+- Slug değerleri doğru mu?
+- Önizleme çalışıyor mu?
+
+## 16.2 Hizmetler
+
+Kontrol edilecekler:
+
+- Hizmet listesi doğru mu?
+- Hizmet detay sayfaları açılıyor mu?
+- Görseller doğru mu?
+- SEO alanları dolu mu?
+
+## 16.3 Blog
+
+Kontrol edilecekler:
+
+- Blog kategorileri var mı?
+- Blog yazısı eklenebiliyor mu?
+- Blog önizleme çalışıyor mu?
+- Kapak görseli doğru görünüyor mu?
+
+---
+
+# 17. Medya Yönetimi Kontrolü
+
+Medya yönetimi test edilmelidir.
+
+Test adımları:
+
+1. Küçük bir JPG görsel yükle.
+2. Yükleme sonrası dosya listede görünüyor mu kontrol et.
+3. Tam URL kopyalanabiliyor mu kontrol et.
+4. Path kopyalanabiliyor mu kontrol et.
+5. Medyadan seç özelliğini test et.
+6. Görsel ön yüzde açılıyor mu kontrol et.
+
+GD aktifse görsel optimizasyon çalışır.
+
+GD aktif değilse dosya yüklenebilir fakat optimizasyon yapılmayabilir.
+
+---
+
+# 18. SMTP Ayarları
+
+İletişim formunun e-posta göndermesi için SMTP ayarları yapılmalıdır.
+
+Site ayarları içinde aşağıdaki bilgiler doldurulur:
+
+```text
+SMTP aktif/pasif
+SMTP host
+SMTP port
+SMTP kullanıcı adı
+SMTP şifre
 Şifreleme
-Gönderen E-posta
-Gönderen Adı
-Form Bildirimi Gidecek E-posta
+Gönderen e-posta
+Gönderen adı
+Form bildirimi gidecek e-posta
 ```
 
----
-
-## 11.1 cPanel Mail Örneği
+## 18.1 cPanel Mail Örneği
 
 ```text
-SMTP Host: mail.domain-adresi.com
+SMTP Host: mail.domain.com
 SMTP Port: 587
 Şifreleme: TLS
-SMTP Kullanıcı Adı: info@domain-adresi.com
-Gönderen E-posta: info@domain-adresi.com
+SMTP Kullanıcı Adı: info@domain.com
+Gönderen E-posta: info@domain.com
 ```
 
----
+## 18.2 Test
 
-## 11.2 Gmail Kullanımı
-
-Gmail kullanılacaksa normal hesap şifresi yerine uygulama şifresi gerekir.
-
-SMTP ayarları kaydedildikten sonra iletişim formu ile test gönderimi yapılmalıdır.
-
----
-
-# 12. SEO Yönetimi
-
-Sayfa, hizmet ve blog içeriklerinde SEO alanları doldurulmalıdır.
-
-Temel SEO alanları:
-
-- Meta title
-- Meta description
-- Meta keywords
-- OG image
-- Slug
+1. SMTP ayarları kaydedilir.
+2. İletişim sayfasından test mesajı gönderilir.
+3. Mesaj admin panelde görünüyor mu kontrol edilir.
+4. E-posta bildirimi geliyor mu kontrol edilir.
+5. Spam/Junk klasörü kontrol edilir.
 
 ---
 
-## 12.1 Meta Title
-
-Sayfanın arama motorlarında görünen başlığıdır.
-
-Kısa ve açıklayıcı olmalıdır.
-
----
-
-## 12.2 Meta Description
-
-Sayfanın kısa açıklamasıdır.
-
-İçeriği özetlemelidir.
-
----
-
-## 12.3 OG Image
-
-Sosyal medya paylaşımlarında görünen görseldir.
-
-Önerilen kullanım:
-
-```text
-1200 x 630 px
-```
-
----
-
-# 13. Sitemap ve Robots
-
-Sistem sitemap ve robots çıktıları üretebilir.
+# 19. SEO / Sitemap / Robots Kontrolü
 
 Kontrol adresleri:
 
 ```text
-https://domain-adresi.com/sitemap.xml
-https://domain-adresi.com/robots.txt
+https://domain.com/sitemap.xml
+https://domain.com/robots.txt
 ```
 
-Yeni sayfalar veya blog yazıları eklendikten sonra sitemap çıktısı kontrol edilebilir.
-
----
-
-# 14. Backup / Export
-
-Panelde veya ek araçlarla içerik yedeği alınabilir.
-
-Yedek alınırken dikkat edilmesi gerekenler:
-
-- Veritabanı yedeği alınmalıdır.
-- Medya dosyaları ayrıca yedeklenmelidir.
-- Site ayarları kontrol edilmelidir.
-- Yedek dosyaları public klasörde bırakılmamalıdır.
-
----
-
-# 15. Güvenlik Notları
-
-Admin panel güvenliği için aşağıdaki noktalara dikkat edilmelidir:
-
-- Admin şifresi güçlü olmalıdır.
-- Gereksiz kullanıcı hesabı bırakılmamalıdır.
-- Geçici PHP scriptleri işlem sonrası silinmelidir.
-- SMTP şifreleri paylaşılmamalıdır.
-- APP_DEBUG canlı ortamda kapalı olmalıdır.
-- Public klasörde test/debug dosyaları bırakılmamalıdır.
-- Yüklenen medya dosyaları kontrol edilmelidir.
-
----
-
-# 16. Sık Karşılaşılan Sorunlar
-
-## 16.1 Görsel görünmüyor
-
 Kontrol edilecekler:
 
-- Görsel URL’si doğru mu?
-- Dosya medya klasöründe var mı?
-- Tam URL mi relative path mi kullanılmış?
-- Dosya adı Türkçe karakter veya boşluk içeriyor mu?
+- Sitemap açılıyor mu?
+- Robots.txt açılıyor mu?
+- Domain doğru mu?
+- Yeni sayfalar sitemap içinde görünüyor mu?
+- SEO title ve description alanları dolu mu?
 
 ---
 
-## 16.2 İletişim formu mail göndermiyor
+# 20. Güvenlik Kontrolleri
 
-Kontrol edilecekler:
+Canlıya geçmeden önce aşağıdaki güvenlik kontrolleri yapılmalıdır:
 
-- SMTP aktif mi?
-- SMTP host doğru mu?
-- Port doğru mu?
-- Kullanıcı adı ve şifre doğru mu?
-- Gönderen e-posta adresi SMTP hesabı ile uyumlu mu?
-- Hosting firması SMTP çıkışına izin veriyor mu?
-
----
-
-## 16.3 Sayfa 404 veriyor
-
-Kontrol edilecekler:
-
-- Slug doğru mu?
-- Sayfa aktif mi?
-- Menü linki doğru mu?
-- Cache temizlenmiş mi?
-- URL başında veya sonunda fazladan boşluk var mı?
+- `APP_DEBUG=false`
+- `APP_ENV=production`
+- `.env` dışarıdan erişilemiyor
+- `composer.json` dışarıdan erişilemiyor
+- `artisan` dışarıdan erişilemiyor
+- `app` klasörü dışarıdan erişilemiyor
+- `storage` klasörü dışarıdan erişilemiyor
+- `vendor` klasörü dışarıdan erişilemiyor
+- Public altında geçici PHP script yok
+- Varsayılan/test kullanıcılar kaldırıldı
+- Admin şifresi değiştirildi
+- SMTP şifresi paylaşılmadı
+- Docs klasörü dış erişime kapatıldı
 
 ---
 
-## 16.4 Admin panel açılmıyor
+# 21. Geçici Script Temizliği
 
-Kontrol edilecekler:
+Kurulum sırasında kullanılan geçici scriptler işlem bitince mutlaka silinmelidir.
 
-- `/admin/login` adresi denenmeli
-- Kullanıcı bilgileri doğru mu?
-- Session ayarları çalışıyor mu?
-- `.htaccess` dosyaları doğru mu?
-- Hosting PHP sürümü uygun mu?
+Kontrol edilecek örnek dosya isimleri:
 
----
+```text
+create_*.php
+fix_*.php
+update_*.php
+emergency_*.php
+read_*.php
+test_*.php
+check_*.php
+debug_*.php
+repair_*.php
+install_*.php
+setup_*.php
+temp_*.php
+add_*.php
+final_*.php
+```
 
-# 17. Önerilen Görsel Ölçüleri
+Public klasörde sadece gerekli dosyalar kalmalıdır.
 
-| Kullanım Alanı | Önerilen Ölçü |
-|---|---|
-| Ana sayfa slider | 1920 x 800 px |
-| Blog kapak görseli | 1200 x 630 px |
-| Hizmet görseli | 1200 x 800 px |
-| Sayfa üst görseli | 1600 x 700 px |
-| Logo | SVG veya PNG |
-| Favicon | 512 x 512 px |
+Özellikle şu tarz dosyalar canlıda bırakılmamalıdır:
 
----
-
-# 18. İçerik Giriş Önerileri
-
-İçerik girerken şu noktalara dikkat edilmelidir:
-
-- Başlıklar kısa ve anlaşılır olmalıdır.
-- Paragraflar çok uzun olmamalıdır.
-- Hizmet sayfalarında net açıklama kullanılmalıdır.
-- Blog yazılarında ara başlıklar eklenmelidir.
-- Görseller sıkıştırılmış ve kaliteli olmalıdır.
-- SEO alanları boş bırakılmamalıdır.
-- Yayına almadan önce önizleme yapılmalıdır.
+```text
+final_live_check.php
+read_last_laravel_error.php
+create_admin_user.php
+backup_export.php
+```
 
 ---
 
-# 19. Yayına Alma Kontrol Listesi
+# 22. Final Canlı Kontrol
 
-Yeni içerik yayınlamadan önce:
+Final kontrol scripti çalıştırılarak sistem raporu alınabilir.
 
-- Başlık doğru mu?
-- Slug doğru mu?
-- İçerik kontrol edildi mi?
-- Görsel yüklendi mi?
-- SEO alanları dolduruldu mu?
-- Menü gerekiyorsa eklendi mi?
-- Önizleme yapıldı mı?
+Kontrol edilmesi gereken başlıklar:
+
+- Kritik hata sayısı
+- Uyarı sayısı
+- Public geçici dosya kontrolü
+- APP_DEBUG
+- APP_ENV
+- .htaccess kontrolleri
+- Route kontrolleri
+- Storage/cache yazılabilirliği
+- GD eklentisi
+- Laravel log boyutu
+
+Final kontrolde sadece kontrol dosyasının kendisi kritik görünüyorsa, dosya silindikten sonra kritik sayı 0 olur.
+
+---
+
+# 23. Müşteri Teslim Kontrolü
+
+Müşteriye teslim öncesi aşağıdaki kontroller yapılmalıdır:
+
+- Admin panel giriş bilgileri hazırlandı mı?
+- Kullanım kılavuzu hazır mı?
+- Kullanım kılavuzu admin panelden açılıyor mu?
+- Docs klasörü dış erişime kapalı mı?
+- Logo ve renkler müşteri bilgilerine göre güncellendi mi?
+- İletişim bilgileri doğru mu?
+- SMTP test edildi mi?
+- Menü linkleri doğru mu?
 - Mobil görünüm kontrol edildi mi?
+- Form gönderimi test edildi mi?
+- Sitemap/robots kontrol edildi mi?
+- Geçici dosyalar silindi mi?
+- Yedek alındı mı?
 
 ---
 
-# 20. Destek Notları
+# 24. Kurulum Sonrası Bakım Notları
 
-Teknik destek gerektiren durumlarda aşağıdaki bilgiler hazırlanmalıdır:
+Kurulumdan sonra aşağıdaki periyodik kontroller önerilir.
 
-- Hangi sayfada sorun oluştu?
-- Hata mesajı var mı?
-- İşlem hangi kullanıcı ile yapıldı?
-- Sorun ne zaman başladı?
-- Son yapılan değişiklik neydi?
-- Ekran görüntüsü mevcut mu?
+## Haftalık
 
-Bu bilgiler, sorunun daha hızlı analiz edilmesini sağlar.
+- İletişim mesajları kontrol edilir.
+- Yeni içerikler kontrol edilir.
+- Log dosyası aşırı büyümüş mü bakılır.
+
+## Aylık
+
+- Admin kullanıcıları kontrol edilir.
+- Yedek alınır.
+- Medya klasörü kontrol edilir.
+- Gereksiz dosyalar temizlenir.
+- Sitemap kontrol edilir.
+
+## Büyük değişikliklerden önce
+
+- Veritabanı yedeği alınır.
+- Medya klasörü yedeklenir.
+- `.env` dosyası yedeklenir.
+- Güncelleme sonrası admin panel test edilir.
 
 ---
 
-# 21. Son Not
+# 25. Hızlı Kurulum Özeti
 
-Bu kullanım kılavuzu, yönetim panelinin temel kullanımını anlatır.
 
-Panelde yapılan değişikliklerin canlı siteye yansıdığı unutulmamalıdır.
+```text
+1. Domain/hosting hazırla
+2. Dosyaları yükle
+3. .env düzenle
+4. DB oluştur ve import et
+5. APP_KEY kontrol et
+6. .htaccess kontrol et
+7. Storage/cache izinlerini kontrol et
+8. Admin girişini test et
+9. Site ayarlarını doldur
+10. Logo/favicon yükle
+11. Menüleri düzenle
+12. Slider ekle
+13. Hizmet/sayfa/blog içeriklerini kontrol et
+14. SMTP ayarlarını yap
+15. İletişim formunu test et
+16. Sitemap/robots kontrol et
+17. Final güvenlik kontrolü yap
+18. Geçici scriptleri sil
+19. Yedek al
+20. Müşteriye teslim et
+```
 
-Bu nedenle özellikle sayfa, menü, slider ve site ayarları değişikliklerinden sonra web sitesi hem masaüstü hem mobil görünümde kontrol edilmelidir.
+---
+
+# 26. Son Not
+
+Bu checklist, kurulum sürecinde eksik adım kalmaması için hazırlanmıştır.
+
+Her kurulumdan sonra bu doküman üzerinden işaretleme yapılması önerilir.
+
+Kurulum tamamlandıktan sonra özellikle `.env`, `.htaccess`, admin kullanıcıları, geçici scriptler ve SMTP ayarları mutlaka tekrar kontrol edilmelidir.
