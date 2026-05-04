@@ -84,12 +84,12 @@ Bu proje aşağıdaki teknolojiler kullanılarak geliştirilmiştir:
 
 ## Kurulum Mantığı
 
-ITCRAFT CMS, müşteri tarafında kolay kurulum hedefiyle hazırlanmıştır.
+ITCRAFT CMS, tek tıkla kolay kurulum hedefiyle hazırlanmıştır.
 
 Temel kurulum akışı şu şekildedir:
 
 ```text
-1. Müşteri sunucusuna tek kurulum dosyası yüklenir
+1. Sunucuya tek kurulum .php dosyası yüklenir
 2. Kurulum dosyası GitHub reposundan projeyi indirir
 3. Proje dosyaları sunucuya açılır
 4. Gerekli storage, cache ve uploads klasörleri oluşturulur
@@ -106,7 +106,7 @@ Temel kurulum akışı şu şekildedir:
 
 ## Tek Dosyalık Kurulum
 
-Müşteri sunucusunda domain ana dizinine aşağıdaki dosya yüklenir:
+Hosting sunucusunda domain ana dizinine aşağıdaki dosya yüklenir:
 
 ```text
 itcraft_cms.php
@@ -255,39 +255,7 @@ storage/install.lock
 
 Bu dosya sistemde kalmalıdır. Kurulumun tekrar çalıştırılmasını engeller.
 
-GitHub reposuna kesinlikle yüklenmemesi gereken dosyalar:
-
-```text
-.env
-.env.*
-storage/logs/*.log
-storage/framework/cache/*
-storage/framework/sessions/*
-storage/framework/views/*
-storage/app/backups/*
-public/create_*.php
-public/fix_*.php
-public/audit_*.php
-public/check_*.php
-public/final_*.php
-public/*backup*
 ```
-
-Repo’ya dahil edilmesi gereken önemli dosyalar:
-
-```text
-.env.example
-database/dump/itcraft_cms_base.sql
-public/assets/itcraft-cms-demo/
-vendor/
-composer.json
-composer.lock
-public/install/index.php
-```
-
-> Not: Normal Laravel kaynak kod reposunda `vendor/` klasörü genellikle tutulmaz. Ancak bu proje cPanel üzerinde Composer çalıştırmadan kurulabilir bir release paketi olarak planlandığı için `vendor/` klasörü kurulum paketine dahil edilebilir.
-
----
 
 ## Dosya Yapısı
 
@@ -355,7 +323,7 @@ Kurulumdan sonra aşağıdaki kontroller yapılmalıdır:
 
 ## Geliştirici Notları
 
-Bu proje, farklı sektörlere uyarlanabilir bir CMS altyapısı olarak planlanmıştır.
+Bu proje, farklı sektörlere uyarlanabilir bir CMS altyapısı olarak planlanmıştır. Gelişmeye açıktır. 
 
 Uyarlanabilecek örnek kullanım alanları:
 
@@ -507,4 +475,4 @@ Initial Release
 
 ITCRAFT CMS, hızlı kurulum, kolay yönetim ve farklı sektörlere uyarlanabilir kurumsal web altyapısı hedefiyle geliştirilmiştir.
 
-Amaç, müşterinin teknik detaylarla uğraşmadan yayına alınabilir bir web yönetim paneline sahip olmasıdır.
+Amaç, son kullanıcının teknik detaylarla uğraşmadan yayına alınabilir bir web yönetim paneline sahip olmasıdır.
