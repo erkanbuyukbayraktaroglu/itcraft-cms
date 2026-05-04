@@ -1,0 +1,598 @@
+<!doctype html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8">
+    <title>@yield('title', 'Admin Panel') | {{ setting('site_name', 'Corporate CMS') }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex,nofollow">
+
+    @if(setting('favicon'))
+        <link rel="icon" type="image/png" href="{{ asset_upload(setting('favicon')) }}">
+    @endif
+
+    <style>
+        :root {
+            --admin-primary: #0f172a;
+            --admin-secondary: #1e293b;
+            --admin-accent: #c9a227;
+            --admin-bg: #f5f7fb;
+            --admin-text: #111827;
+            --admin-muted: #6b7280;
+            --admin-border: #e5e7eb;
+            --admin-success-bg: #dcfce7;
+            --admin-success-text: #166534;
+            --admin-error-bg: #fee2e2;
+            --admin-error-text: #991b1b;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background: var(--admin-bg);
+            color: var(--admin-text);
+        }
+
+        a { color: inherit; text-decoration: none; }
+
+        .admin-shell {
+            min-height: 100vh;
+            display: grid;
+            grid-template-columns: 260px 1fr;
+        }
+
+        .sidebar {
+            background: var(--admin-primary);
+            color: #ffffff;
+            padding: 24px 18px;
+        }
+
+        .brand {
+            font-size: 20px;
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 28px;
+        }
+
+        .brand span { color: var(--admin-accent); }
+
+        .nav-title {
+            color: rgba(255,255,255,.55);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            margin: 22px 0 8px;
+        }
+
+        .nav-link {
+            display: block;
+            padding: 11px 12px;
+            border-radius: 10px;
+            color: rgba(255,255,255,.82);
+            font-weight: 700;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            background: rgba(255,255,255,.1);
+            color: #ffffff;
+        }
+
+        .main { min-width: 0; }
+
+        .topbar {
+            min-height: 72px;
+            background: #ffffff;
+            border-bottom: 1px solid var(--admin-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 28px;
+        }
+
+        .topbar-title {
+            font-weight: 800;
+            color: var(--admin-primary);
+        }
+
+        .user-info {
+            color: var(--admin-muted);
+            font-size: 14px;
+        }
+
+        .content { padding: 28px; }
+
+        .page-title { margin-bottom: 24px; }
+
+        .page-title h1 {
+            margin: 0 0 6px;
+            font-size: 28px;
+            color: var(--admin-primary);
+            letter-spacing: -0.03em;
+        }
+
+        .page-title p {
+            margin: 0;
+            color: var(--admin-muted);
+        }
+
+        .card {
+            background: #ffffff;
+            border: 1px solid var(--admin-border);
+            border-radius: 18px;
+            padding: 22px;
+            box-shadow: 0 10px 26px rgba(15,23,42,.04);
+        }
+
+        .grid { display: grid; gap: 18px; }
+        .grid-4 { grid-template-columns: repeat(4, 1fr); }
+
+        .stat-card {
+            background: #ffffff;
+            border: 1px solid var(--admin-border);
+            border-radius: 18px;
+            padding: 22px;
+            box-shadow: 0 10px 26px rgba(15,23,42,.04);
+        }
+
+        .stat-label {
+            color: var(--admin-muted);
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .stat-number {
+            color: var(--admin-primary);
+            font-size: 34px;
+            font-weight: 900;
+            letter-spacing: -0.05em;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 0;
+            border-radius: 10px;
+            padding: 10px 14px;
+            background: var(--admin-primary);
+            color: #ffffff;
+            font-weight: 800;
+            cursor: pointer;
+            font-size: 14px;
+            text-decoration: none;
+            line-height: 1.2;
+        }
+
+        .btn-secondary { background: #e5e7eb; color: #111827; }
+        .btn-danger { background: #dc2626; color: #ffffff; }
+
+        .alert-success {
+            background: var(--admin-success-bg);
+            color: var(--admin-success-text);
+            padding: 13px 15px;
+            border-radius: 12px;
+            font-weight: 700;
+            margin-bottom: 18px;
+        }
+
+        .alert-error {
+            background: var(--admin-error-bg);
+            color: var(--admin-error-text);
+            padding: 13px 15px;
+            border-radius: 12px;
+            font-weight: 700;
+            margin-bottom: 18px;
+        }
+
+        .table-wrap { overflow-x: auto; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 760px;
+        }
+
+        th, td {
+            padding: 12px 14px;
+            border-bottom: 1px solid var(--admin-border);
+            text-align: left;
+            vertical-align: middle;
+        }
+
+        th {
+            background: #f9fafb;
+            color: #374151;
+            font-size: 13px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 13px;
+            border: 1px solid #d1d5db;
+            border-radius: 10px;
+            font-size: 15px;
+            margin-bottom: 14px;
+            background: #fff;
+        }
+
+        textarea.form-control {
+            min-height: 140px;
+            resize: vertical;
+        }
+
+        .editor-area {
+            font-family: Consolas, Monaco, monospace;
+            line-height: 1.55;
+        }
+
+        label {
+            display: block;
+            font-weight: 800;
+            font-size: 14px;
+            margin-bottom: 7px;
+            color: #374151;
+        }
+
+        .form-grid { display: grid; gap: 16px; }
+        .form-grid-2 { grid-template-columns: repeat(2, 1fr); }
+        .form-grid-3 { grid-template-columns: repeat(3, 1fr); }
+
+        .checkbox-row {
+            display: flex;
+            gap: 18px;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+
+        .checkbox-row label {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin: 0;
+        }
+
+        .form-error {
+            display: block;
+            color: #991b1b;
+            margin-top: -8px;
+            margin-bottom: 12px;
+            font-weight: 700;
+        }
+
+        .badge {
+            display: inline-flex;
+            padding: 5px 9px;
+            border-radius: 999px;
+            background: #e5e7eb;
+            color: #374151;
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .badge-success { background: #dcfce7; color: #166534; }
+        .badge-danger { background: #fee2e2; color: #991b1b; }
+
+        @media (max-width: 1000px) {
+            .admin-shell { grid-template-columns: 1fr; }
+            .sidebar { position: static; }
+            .grid {
+                grid-template-columns: 1fr !important;
+            }
+            .grid-4,
+            .form-grid-2,
+            .form-grid-3 { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (max-width: 640px) {
+            .content,
+            .topbar {
+                padding-left: 16px;
+                padding-right: 16px;
+            }
+
+            .grid-4,
+            .form-grid-2,
+            .form-grid-3 { grid-template-columns: 1fr; }
+        }
+    </style>
+
+    @stack('head')
+<!-- admin-responsive-start -->
+<style>
+    @media (max-width: 991px) {
+        body.admin-menu-open {
+            overflow: hidden;
+        }
+
+        .admin-mobile-toggle {
+            position: fixed;
+            top: 14px;
+            left: 14px;
+            z-index: 3001;
+            width: 44px;
+            height: 44px;
+            border: 0;
+            border-radius: 12px;
+            background: #111827;
+            color: #ffffff;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            cursor: pointer;
+            box-shadow: 0 12px 30px rgba(15, 23, 42, .25);
+        }
+
+        .sidebar,
+        .admin-sidebar {
+            position: fixed !important;
+            left: 0 !important;
+            top: 0 !important;
+            bottom: 0 !important;
+            width: min(310px, 86vw) !important;
+            z-index: 3000 !important;
+            transform: translateX(-105%);
+            transition: transform .22s ease;
+            overflow-y: auto;
+            box-shadow: 20px 0 60px rgba(15, 23, 42, .18);
+        }
+
+        body.admin-menu-open .sidebar,
+        body.admin-menu-open .admin-sidebar {
+            transform: translateX(0);
+        }
+
+        .main,
+        .content,
+        .admin-content,
+        .main-content {
+            margin-left: 0 !important;
+            width: 100% !important;
+            padding-left: 16px !important;
+            padding-right: 16px !important;
+        }
+
+        .topbar,
+        .admin-topbar {
+            padding-left: 68px !important;
+        }
+
+        .dashboard-stats {
+            grid-template-columns: 1fr !important;
+        }
+
+        .dashboard-grid {
+            grid-template-columns: 1fr !important;
+        }
+
+        .form-grid,
+        .form-grid-2 {
+            grid-template-columns: 1fr !important;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        table {
+            min-width: 760px;
+        }
+    }
+
+    @media (min-width: 992px) {
+        .admin-mobile-toggle {
+            display: none !important;
+        }
+    }
+</style>
+<!-- admin-responsive-end -->
+<!-- content-editor-style-start -->
+<style>
+    .ck-editor__editable {
+        min-height: 320px;
+        line-height: 1.7;
+    }
+
+    .ck-editor__editable_inline {
+        border-bottom-left-radius: 14px !important;
+        border-bottom-right-radius: 14px !important;
+    }
+
+    .ck.ck-toolbar {
+        border-top-left-radius: 14px !important;
+        border-top-right-radius: 14px !important;
+    }
+
+    .editor-help {
+        display:block;
+        color:#6b7280;
+        margin-top:6px;
+        font-size:13px;
+        line-height:1.5;
+    }
+
+    @media (max-width: 768px) {
+        .ck-editor__editable {
+            min-height: 260px;
+        }
+    }
+</style>
+<!-- content-editor-style-end -->
+</head>
+<body>
+<div class="admin-shell">
+    <aside class="sidebar">
+        <div class="brand">
+            {{ setting('site_name', 'Corporate CMS') }}<span>.</span>
+        </div>
+
+        <div class="nav-title">Panel</div>
+        <a href="{{ route('admin.dashboard') }}" class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">Dashboard</a>
+
+        <div class="nav-title">İçerik Yönetimi</div>
+        <a href="{{ route('admin.pages.index') }}" class="nav-link {{ request()->routeIs('admin.pages.*') ? 'active' : '' }}">Sayfalar</a>
+        <a href="{{ route('admin.services.index') }}" class="nav-link {{ request()->routeIs('admin.services.*') ? 'active' : '' }}">Hizmetler</a>
+        <a href="{{ route('admin.post-categories.index') }}" class="nav-link {{ request()->routeIs('admin.post-categories.*') ? 'active' : '' }}">Blog Kategorileri</a>
+        <a href="{{ route('admin.posts.index') }}" class="nav-link {{ request()->routeIs('admin.posts.*') ? 'active' : '' }}">Blog Yazıları</a>
+        <a href="{{ route('admin.sliders.index') }}" class="nav-link {{ request()->routeIs('admin.sliders.*') ? 'active' : '' }}">Slider</a>
+        <a href="{{ route('admin.team-members.index') }}" class="nav-link {{ request()->routeIs('admin.team-members.*') ? 'active' : '' }}">Ekip Üyeleri</a>
+
+        <div class="nav-title">Sistem</div>
+        <a href="{{ route('admin.menus.index') }}" class="nav-link {{ request()->routeIs('admin.menus.*') ? 'active' : '' }}">Menü Yönetimi</a>
+        <a href="{{ route('admin.media.index') }}" class="nav-link {{ request()->routeIs('admin.media.*') ? 'active' : '' }}">Medya Yönetimi</a>
+        <a href="{{ route('admin.contact-messages.index') }}" class="nav-link {{ request()->routeIs('admin.contact-messages.*') ? 'active' : '' }}">İletişim Mesajları</a>
+        <a href="{{ route('admin.settings.index') }}" class="nav-link {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}">Site Ayarları</a>
+        <a href="{{ route('home') }}" target="_blank" class="nav-link">Siteyi Görüntüle</a>
+
+        <form method="post" action="{{ route('admin.logout') }}" style="margin-top:18px;">
+            @csrf
+            <button type="submit" class="btn btn-danger" style="width:100%;">Çıkış Yap</button>
+        </form>
+    </aside>
+
+    <div class="main">
+        <header class="topbar">
+            <div class="topbar-title">@yield('topbar_title', 'Admin Panel')</div>
+            <div class="user-info">
+                {{ session('admin_user_name') }} · {{ session('admin_user_email') }}
+            </div>
+        </header>
+
+        <section class="content">
+            @if(session('success'))
+                <div class="alert-success">{{ session('success') }}</div>
+            @endif
+
+            @if(session('error'))
+                <div class="alert-error">{{ session('error') }}</div>
+            @endif
+
+            @yield('content')
+        </section>
+    </div>
+</div>
+
+@stack('scripts')
+<!-- admin-responsive-script-start -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var hasSidebar = document.querySelector('.sidebar, .admin-sidebar');
+
+        if (!hasSidebar) {
+            return;
+        }
+
+        var existingButton = document.querySelector('.admin-mobile-toggle');
+
+        if (!existingButton) {
+            var button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'admin-mobile-toggle';
+            button.setAttribute('aria-label', 'Menüyü aç/kapat');
+            button.innerHTML = '☰';
+            document.body.appendChild(button);
+        }
+
+        var toggle = document.querySelector('.admin-mobile-toggle');
+
+        if (!toggle) {
+            return;
+        }
+
+        toggle.addEventListener('click', function () {
+            document.body.classList.toggle('admin-menu-open');
+        });
+
+        document.querySelectorAll('.sidebar a, .admin-sidebar a').forEach(function (link) {
+            link.addEventListener('click', function () {
+                document.body.classList.remove('admin-menu-open');
+            });
+        });
+
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape') {
+                document.body.classList.remove('admin-menu-open');
+            }
+        });
+
+        window.addEventListener('resize', function () {
+            if (window.innerWidth > 991) {
+                document.body.classList.remove('admin-menu-open');
+            }
+        });
+    });
+</script>
+<!-- admin-responsive-script-end -->
+<!-- content-editor-script-start -->
+<script src="https://cdn.ckeditor.com/ckeditor5/41.4.2/classic/ckeditor.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        if (typeof ClassicEditor === 'undefined') {
+            return;
+        }
+
+        document.querySelectorAll('textarea.rich-editor').forEach(function (textarea) {
+            if (textarea.dataset.editorInitialized === '1') {
+                return;
+            }
+
+            textarea.dataset.editorInitialized = '1';
+
+            ClassicEditor
+                .create(textarea, {
+                    toolbar: {
+                        items: [
+                            'heading',
+                            '|',
+                            'bold',
+                            'italic',
+                            'link',
+                            '|',
+                            'bulletedList',
+                            'numberedList',
+                            '|',
+                            'blockQuote',
+                            'insertTable',
+                            '|',
+                            'undo',
+                            'redo'
+                        ]
+                    },
+                    heading: {
+                        options: [
+                            { model: 'paragraph', title: 'Paragraf', class: 'ck-heading_paragraph' },
+                            { model: 'heading2', view: 'h2', title: 'Başlık 2', class: 'ck-heading_heading2' },
+                            { model: 'heading3', view: 'h3', title: 'Başlık 3', class: 'ck-heading_heading3' },
+                            { model: 'heading4', view: 'h4', title: 'Başlık 4', class: 'ck-heading_heading4' }
+                        ]
+                    },
+                    table: {
+                        contentToolbar: [
+                            'tableColumn',
+                            'tableRow',
+                            'mergeTableCells'
+                        ]
+                    }
+                })
+                .then(function (editor) {
+                    if (textarea.form) {
+                        textarea.form.addEventListener('submit', function () {
+                            textarea.value = editor.getData();
+                        });
+                    }
+                })
+                .catch(function (error) {
+                    console.error('Editor başlatılamadı:', error);
+                });
+        });
+    });
+</script>
+<!-- content-editor-script-end -->
+</body>
+</html>

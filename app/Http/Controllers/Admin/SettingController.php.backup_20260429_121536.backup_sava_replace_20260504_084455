@@ -1,0 +1,247 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\SiteSetting;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\View\View;
+
+class SettingController extends Controller
+{
+    public function index(): View
+    {
+        $settings = SiteSetting::query()
+            ->pluck('setting_value', 'setting_key')
+            ->toArray();
+
+        return view('admin.settings.index', [
+            'settings' => $settings,
+            'groups' => $this->settingGroups(),
+        ]);
+    }
+
+    public function update(Request $request): RedirectResponse
+    {
+        $groups = $this->settingGroups();
+
+        foreach ($groups as $groupKey => $group) {
+            foreach ($group['items'] as $key => $item) {
+                $value = $request->input($key);
+
+                SiteSetting::query()->updateOrCreate(
+                    ['setting_key' => $key],
+                    [
+                        'setting_value' => $value,
+                        'setting_type' => $item['type'] ?? 'text',
+                        'setting_group' => $groupKey,
+                        'label' => $item['label'],
+                        'sort_order' => $item['sort_order'] ?? 0,
+                        'is_public' => true,
+                    ]
+                );
+            }
+        }
+
+        return redirect()
+            ->route('admin.settings.index')
+            ->with('success', 'Site ayarları başarıyla güncellendi.');
+    }
+
+    private function settingGroups(): array
+    {
+        return [
+            'general' => [
+                'title' => 'Genel Site Bilgileri',
+                'description' => 'Site adı, slogan, açıklama ve temel marka bilgileri.',
+                'items' => [
+                    'site_name' => [
+                        'label' => 'Site Adı',
+                        'type' => 'text',
+                        'placeholder' => 'SAVA Hukuk',
+                        'sort_order' => 1,
+                    ],
+                    'site_slogan' => [
+                        'label' => 'Site Sloganı',
+                        'type' => 'text',
+                        'placeholder' => 'Güvenilir hukuki danışmanlık',
+                        'sort_order' => 2,
+                    ],
+                    'site_description' => [
+                        'label' => 'Site Açıklaması',
+                        'type' => 'textarea',
+                        'placeholder' => 'Kurumsal web sitesi kısa açıklaması',
+                        'sort_order' => 3,
+                    ],
+                    'logo' => [
+                        'label' => 'Logo URL / Path',
+                        'type' => 'text',
+                        'placeholder' => 'uploads/logo/logo.png',
+                        'sort_order' => 4,
+                    ],
+                    'favicon' => [
+                        'label' => 'Favicon URL / Path',
+                        'type' => 'text',
+                        'placeholder' => 'uploads/logo/favicon.png',
+                        'sort_order' => 5,
+                    ],
+                ],
+            ],
+
+            'contact' => [
+                'title' => 'İletişim Bilgileri',
+                'description' => 'Footer ve iletişim alanlarında kullanılacak bilgiler.',
+                'items' => [
+                    'email' => [
+                        'label' => 'E-posta',
+                        'type' => 'email',
+                        'placeholder' => 'info@example.com',
+                        'sort_order' => 1,
+                    ],
+                    'phone' => [
+                        'label' => 'Telefon',
+                        'type' => 'text',
+                        'placeholder' => '+90 212 000 00 00',
+                        'sort_order' => 2,
+                    ],
+                    'address' => [
+                        'label' => 'Adres',
+                        'type' => 'textarea',
+                        'placeholder' => 'İstanbul, Türkiye',
+                        'sort_order' => 3,
+                    ],
+                    'working_hours' => [
+                        'label' => 'Çalışma Saatleri',
+                        'type' => 'text',
+                        'placeholder' => 'Pazartesi - Cuma 09:00 - 18:00',
+                        'sort_order' => 4,
+                    ],
+                ],
+            ],
+
+            'colors' => [
+                'title' => 'Renk Yönetimi',
+                'description' => 'Sitenin temel renklerini buradan yönetebilirsin.',
+                'items' => [
+                    'primary_color' => [
+                        'label' => 'Ana Renk',
+                        'type' => 'color',
+                        'placeholder' => '#0f172a',
+                        'sort_order' => 1,
+                    ],
+                    'secondary_color' => [
+                        'label' => 'İkincil Renk',
+                        'type' => 'color',
+                        'placeholder' => '#1e293b',
+                        'sort_order' => 2,
+                    ],
+                    'accent_color' => [
+                        'label' => 'Vurgu Rengi',
+                        'type' => 'color',
+                        'placeholder' => '#c9a227',
+                        'sort_order' => 3,
+                    ],
+                    'background_color' => [
+                        'label' => 'Arka Plan Rengi',
+                        'type' => 'color',
+                        'placeholder' => '#ffffff',
+                        'sort_order' => 4,
+                    ],
+                    'text_color' => [
+                        'label' => 'Metin Rengi',
+                        'type' => 'color',
+                        'placeholder' => '#111827',
+                        'sort_order' => 5,
+                    ],
+                    'header_color' => [
+                        'label' => 'Header Rengi',
+                        'type' => 'color',
+                        'placeholder' => '#ffffff',
+                        'sort_order' => 6,
+                    ],
+                    'footer_color' => [
+                        'label' => 'Footer Rengi',
+                        'type' => 'color',
+                        'placeholder' => '#0f172a',
+                        'sort_order' => 7,
+                    ],
+                    'button_color' => [
+                        'label' => 'Buton Rengi',
+                        'type' => 'color',
+                        'placeholder' => '#0f172a',
+                        'sort_order' => 8,
+                    ],
+                ],
+            ],
+
+            'seo' => [
+                'title' => 'Varsayılan SEO Ayarları',
+                'description' => 'Sayfa özelinde SEO girilmediğinde kullanılacak varsayılan değerler.',
+                'items' => [
+                    'default_meta_title' => [
+                        'label' => 'Varsayılan Meta Başlık',
+                        'type' => 'text',
+                        'placeholder' => 'SAVA Hukuk | Kurumsal Hukuk Danışmanlığı',
+                        'sort_order' => 1,
+                    ],
+                    'default_meta_description' => [
+                        'label' => 'Varsayılan Meta Açıklama',
+                        'type' => 'textarea',
+                        'placeholder' => 'Kurumsal hukuk, danışmanlık ve dava takip süreçleri için profesyonel hizmetler.',
+                        'sort_order' => 2,
+                    ],
+                    'default_meta_keywords' => [
+                        'label' => 'Varsayılan Meta Anahtar Kelimeler',
+                        'type' => 'text',
+                        'placeholder' => 'hukuk, danışmanlık, avukat, kurumsal hukuk',
+                        'sort_order' => 3,
+                    ],
+                    'default_og_image' => [
+                        'label' => 'Varsayılan OG Görseli',
+                        'type' => 'text',
+                        'placeholder' => 'uploads/og/default-og.jpg',
+                        'sort_order' => 4,
+                    ],
+                ],
+            ],
+
+            'social' => [
+                'title' => 'Sosyal Medya Linkleri',
+                'description' => 'Footer ve ileride sosyal medya alanlarında kullanılacak bağlantılar.',
+                'items' => [
+                    'linkedin_url' => [
+                        'label' => 'LinkedIn URL',
+                        'type' => 'text',
+                        'placeholder' => 'https://www.linkedin.com/company/...',
+                        'sort_order' => 1,
+                    ],
+                    'instagram_url' => [
+                        'label' => 'Instagram URL',
+                        'type' => 'text',
+                        'placeholder' => 'https://www.instagram.com/...',
+                        'sort_order' => 2,
+                    ],
+                    'facebook_url' => [
+                        'label' => 'Facebook URL',
+                        'type' => 'text',
+                        'placeholder' => 'https://www.facebook.com/...',
+                        'sort_order' => 3,
+                    ],
+                    'x_url' => [
+                        'label' => 'X / Twitter URL',
+                        'type' => 'text',
+                        'placeholder' => 'https://x.com/...',
+                        'sort_order' => 4,
+                    ],
+                    'youtube_url' => [
+                        'label' => 'YouTube URL',
+                        'type' => 'text',
+                        'placeholder' => 'https://www.youtube.com/...',
+                        'sort_order' => 5,
+                    ],
+                ],
+            ],
+        ];
+    }
+}

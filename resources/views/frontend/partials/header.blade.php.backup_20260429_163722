@@ -1,0 +1,57 @@
+<header class="site-header">
+    <div class="container header-inner">
+        <a href="{{ route('home') }}" class="logo">
+            @php
+                $headerLogo = setting('header_logo') ?: setting('logo');
+            @endphp
+
+            @if($headerLogo)
+                <img src="{{ asset_upload($headerLogo) }}" alt="{{ setting('site_name', 'Corporate CMS') }}" style="max-height:46px; width:auto; display:block;">
+            @else
+                {{ setting('site_name', 'Corporate CMS') }}<span>.</span>
+            @endif
+        </a>
+
+        @php
+            $headerMenuItems = collect();
+
+            try {
+                if (class_exists(\App\Models\Menu::class)) {
+                    $headerMenu = \App\Models\Menu::query()
+                        ->where('slug', 'header')
+                        ->where('is_active', 1)
+                        ->first();
+
+                    if ($headerMenu) {
+                        $headerMenuItems = \App\Models\MenuItem::query()
+                            ->where('menu_id', $headerMenu->id)
+                            ->whereNull('parent_id')
+                            ->where('is_active', 1)
+                            ->orderBy('sort_order')
+                            ->orderBy('title')
+                            ->get();
+                    }
+                }
+            } catch (\Throwable $e) {
+                $headerMenuItems = collect();
+            }
+        @endphp
+
+        <nav class="nav">
+            @if($headerMenuItems->count())
+                @foreach($headerMenuItems as $menuItem)
+                    <a href="{{ $menuItem->url }}" target="{{ $menuItem->target ?: '_self' }}" class="{{ request()->is(ltrim($menuItem->url, '/')) ? 'active' : '' }}">
+                        {{ $menuItem->title }}
+                    </a>
+                @endforeach
+            @else
+                <a href="{{ route('home') }}" class="{{ request()->routeIs('home') ? 'active' : '' }}">Anasayfa</a>
+                <a href="{{ url('/hakkimizda') }}" class="{{ request()->is('hakkimizda') ? 'active' : '' }}">Hakkımızda</a>
+                <a href="{{ route('services.index') }}" class="{{ request()->is('hizmetler*') ? 'active' : '' }}">Hizmetler</a>
+                <a href="{{ route('team.index') }}" class="{{ request()->is('ekibimiz*') ? 'active' : '' }}">Ekibimiz</a>
+                <a href="{{ route('blog.index') }}" class="{{ request()->is('blog*') ? 'active' : '' }}">Blog</a>
+                <a href="{{ route('contact.index') }}" class="{{ request()->is('iletisim') ? 'active' : '' }}">İletişim</a>
+            @endif
+        </nav>
+    </div>
+</header>

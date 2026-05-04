@@ -1,0 +1,81 @@
+@extends('frontend.layouts.app')
+
+@section('title', seo_title(setting('site_slogan', 'Kurumsal Web Altyapısı')))
+@section('meta_description', setting('site_description', 'SEO uyumlu, hızlı ve yönetilebilir kurumsal web sitesi altyapısı.'))
+
+@section('content')
+<section class="hero">
+    <div class="container hero-grid">
+        <div>
+            <h1>{{ setting('site_slogan', 'Laravel tabanlı kurumsal web altyapısı') }}</h1>
+            <p>{{ setting('site_description', 'Sınırsız sayfa destekli, SEO uyumlu, dinamik renk yönetimli kurumsal web sitesi altyapısı.') }}</p>
+            <a href="{{ route('services.index') }}" class="btn btn-accent">Hizmetleri İncele</a>
+        </div>
+
+        <div class="hero-card">
+            <strong>Dinamik CMS Altyapısı</strong>
+            <p>Sayfalar, hizmetler, blog içerikleri, ekip üyeleri ve SEO alanları yönetilebilir yapıdadır.</p>
+        </div>
+    </div>
+</section>
+
+@if($featuredServices->count())
+<section class="section">
+    <div class="container">
+        <div class="section-title">
+            <h2>Hizmetler</h2>
+            <p>Kurumsal yapınıza uygun, yönetilebilir ve geliştirilebilir hizmet modülleri.</p>
+        </div>
+
+        <div class="grid grid-3">
+            @foreach($featuredServices as $service)
+                <article class="card">
+                    <h3>{{ $service->title }}</h3>
+                    <p>{{ $service->summary }}</p>
+                    <a href="{{ route('services.show', $service->slug) }}" class="btn">Detay</a>
+                </article>
+            @endforeach
+        </div>
+    </div>
+</section>
+@endif
+
+@if($aboutPage)
+<section class="section section-muted">
+    <div class="container">
+        <div class="section-title">
+            <h2>{{ $aboutPage->title }}</h2>
+            <p>{{ $aboutPage->summary }}</p>
+        </div>
+
+        <div class="content">
+            {!! $aboutPage->content !!}
+        </div>
+
+        <br>
+        <a href="{{ url('/hakkimizda') }}" class="btn">Devamını Oku</a>
+    </div>
+</section>
+@endif
+
+@if($latestPosts->count())
+<section class="section">
+    <div class="container">
+        <div class="section-title">
+            <h2>Blog</h2>
+            <p>Güncel içerikler, duyurular ve bilgilendirici yazılar.</p>
+        </div>
+
+        <div class="grid grid-3">
+            @foreach($latestPosts as $post)
+                <article class="card">
+                    <h3>{{ $post->title }}</h3>
+                    <p>{{ $post->summary }}</p>
+                    <a href="{{ route('blog.show', $post->slug) }}" class="btn">Oku</a>
+                </article>
+            @endforeach
+        </div>
+    </div>
+</section>
+@endif
+@endsection

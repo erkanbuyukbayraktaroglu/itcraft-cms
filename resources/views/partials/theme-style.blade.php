@@ -1,0 +1,1456 @@
+@php
+    /*
+    |--------------------------------------------------------------------------
+    | Frontend Dynamic Theme Style
+    |--------------------------------------------------------------------------
+    | Bu dosya site_settings tablosundaki tema ayarlarından CSS değişkenleri üretir.
+    | Admin panelden yönetilir: /admin/theme-settings
+    |--------------------------------------------------------------------------
+    */
+
+    $themeSettings = null;
+
+    try {
+        if (\Illuminate\Support\Facades\Schema::hasTable('site_settings')) {
+            $themeSettings = \Illuminate\Support\Facades\DB::table('site_settings')->orderBy('id')->first();
+        }
+    } catch (\Throwable $exception) {
+        $themeSettings = null;
+    }
+
+    $themeValue = function (string $key, string $fallback) use ($themeSettings): string {
+        if (!$themeSettings) {
+            return $fallback;
+        }
+
+        $value = $themeSettings->{$key} ?? null;
+
+        if ($value === null || trim((string) $value) === '') {
+            return $fallback;
+        }
+
+        return trim((string) $value);
+    };
+
+    $shadowLevel = $themeValue('theme_shadow_level', 'medium');
+
+    $themeShadow = match ($shadowLevel) {
+        'none' => 'none',
+        'soft' => '0 10px 24px rgba(15, 23, 42, .06)',
+        'strong' => '0 22px 50px rgba(15, 23, 42, .18)',
+        default => '0 16px 36px rgba(15, 23, 42, .10)',
+    };
+@endphp
+
+<style id="frontend-dynamic-theme">
+    :root {
+        --theme-primary: {{ $themeValue('theme_primary_color', '#1d4ed8') }};
+        --theme-secondary: {{ $themeValue('theme_secondary_color', '#f59e0b') }};
+        --theme-accent: {{ $themeValue('theme_accent_color', '#0ea5e9') }};
+
+        --theme-slider-badge-bg: {{ $themeValue('theme_slider_badge_bg', $themeValue('theme_primary_color', '#1e293b')) }};
+        --theme-slider-badge-text: {{ $themeValue('theme_slider_badge_text', '#ffffff') }};
+        --theme-slider-badge-dot: {{ $themeValue('theme_slider_badge_dot', $themeValue('theme_accent_color', '#0ea5e9')) }};
+        --theme-slider-dot-active: {{ $themeValue('theme_slider_dot_active', $themeValue('theme_secondary_color', '#0ea5e9')) }};
+        --theme-slider-dot-passive: {{ $themeValue('theme_slider_dot_passive', '#94a3b8') }};
+        --theme-slider-accent: {{ $themeValue('theme_slider_accent_color', $themeValue('theme_accent_color', '#0ea5e9')) }};
+
+        --theme-button: {{ $themeValue('theme_button_color', '#1d4ed8') }};
+        --theme-button-hover: {{ $themeValue('theme_button_hover_color', '#1e40af') }};
+
+        --theme-header-bg: {{ $themeValue('theme_header_bg', '#ffffff') }};
+        --theme-footer-bg: {{ $themeValue('theme_footer_bg', '#111827') }};
+        --theme-footer-heading: {{ $themeValue('theme_footer_heading_color', '#ffffff') }};
+        --theme-footer-text: {{ $themeValue('theme_footer_text_color', '#d1d5db') }};
+        --theme-footer-link: {{ $themeValue('theme_footer_link_color', '#e5e7eb') }};
+        --theme-footer-link-hover: {{ $themeValue('theme_footer_link_hover_color', '#ffffff') }};
+        --theme-footer-border: {{ $themeValue('theme_footer_border_color', '#374151') }};
+        --theme-footer-social: {{ $themeValue('theme_footer_social_color', '#ffffff') }};
+        --theme-body-bg: {{ $themeValue('theme_body_bg', '#ffffff') }};
+
+        --theme-heading: {{ $themeValue('theme_heading_color', '#111827') }};
+        --theme-text: {{ $themeValue('theme_text_color', '#374151') }};
+        --theme-link: {{ $themeValue('theme_link_color', '#1d4ed8') }};
+
+        --theme-font: {{ $themeValue('theme_font_family', 'Inter, Arial, sans-serif') }};
+        --theme-button-radius: {{ $themeValue('theme_button_radius', '12px') }};
+        --theme-card-radius: {{ $themeValue('theme_card_radius', '18px') }};
+        --theme-container-width: {{ $themeValue('theme_container_width', '1200px') }};
+        --theme-shadow: {{ $themeShadow }};
+    }
+
+    html,
+    body {
+        background: var(--theme-body-bg);
+        color: var(--theme-text);
+        font-family: var(--theme-font);
+    }
+
+    body {
+        color: var(--theme-text);
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    .section-title,
+    .page-title,
+    .hero-title,
+    .service-title,
+    .blog-title {
+        color: var(--theme-heading);
+        font-family: var(--theme-font);
+    }
+
+    p,
+    li,
+    span,
+    .text,
+    .description,
+    .content {
+        font-family: var(--theme-font);
+    }
+
+    a {
+        color: var(--theme-link);
+    }
+
+    a:hover {
+        color: var(--theme-button-hover);
+    }
+
+    .container,
+    .site-container,
+    .main-container,
+    .page-container,
+    .wrapper {
+        max-width: var(--theme-container-width);
+    }
+
+    header,
+    .header,
+    .site-header,
+    .navbar,
+    .main-header,
+    .top-header {
+        background-color: var(--theme-header-bg);
+    }
+
+    footer,
+    .footer,
+    .site-footer,
+    .main-footer {
+        background-color: var(--theme-footer-bg);
+    }
+
+    .btn,
+    .button,
+    button,
+    input[type="submit"],
+    input[type="button"],
+    a.btn,
+    a.button,
+    .theme-button,
+    .primary-button,
+    .cta-button {
+        border-radius: var(--theme-button-radius);
+    }
+
+    .btn:not(.btn-secondary):not(.btn-outline):not(.outline),
+    .button:not(.secondary):not(.outline),
+    button[type="submit"],
+    input[type="submit"],
+    a.btn-primary,
+    .theme-button,
+    .primary-button,
+    .cta-button {
+        background-color: var(--theme-button);
+        border-color: var(--theme-button);
+        color: #ffffff;
+    }
+
+    .btn:not(.btn-secondary):not(.btn-outline):not(.outline):hover,
+    .button:not(.secondary):not(.outline):hover,
+    button[type="submit"]:hover,
+    input[type="submit"]:hover,
+    a.btn-primary:hover,
+    .theme-button:hover,
+    .primary-button:hover,
+    .cta-button:hover {
+        background-color: var(--theme-button-hover);
+        border-color: var(--theme-button-hover);
+        color: #ffffff;
+    }
+
+    .btn-secondary,
+    .button.secondary,
+    .btn-outline,
+    .outline {
+        color: var(--theme-button);
+        border-color: var(--theme-button);
+    }
+
+    .btn-secondary:hover,
+    .button.secondary:hover,
+    .btn-outline:hover,
+    .outline:hover {
+        background-color: var(--theme-button);
+        border-color: var(--theme-button);
+        color: #ffffff;
+    }
+
+    .card,
+    .service-card,
+    .blog-card,
+    .team-card,
+    .feature-card,
+    .contact-card,
+    .box,
+    .panel {
+        border-radius: var(--theme-card-radius);
+        box-shadow: var(--theme-shadow);
+    }
+
+    .badge,
+    .tag,
+    .label,
+    .pill {
+        background-color: color-mix(in srgb, var(--theme-accent) 14%, transparent);
+        color: var(--theme-accent);
+    }
+
+    .accent,
+    .highlight,
+    .subtitle,
+    .section-subtitle {
+        color: var(--theme-accent);
+    }
+
+    .primary-color {
+        color: var(--theme-primary);
+    }
+
+    .primary-bg {
+        background-color: var(--theme-primary);
+    }
+
+    .secondary-color {
+        color: var(--theme-secondary);
+    }
+
+    .secondary-bg {
+        background-color: var(--theme-secondary);
+    }
+
+    .hero,
+    .main-hero,
+    .page-hero {
+        font-family: var(--theme-font);
+    }
+
+    .hero .btn,
+    .hero .button,
+    .main-hero .btn,
+    .main-hero .button {
+        border-radius: var(--theme-button-radius);
+    }
+
+    input,
+    textarea,
+    select {
+        border-radius: var(--theme-button-radius);
+        font-family: var(--theme-font);
+    }
+
+    input:focus,
+    textarea:focus,
+    select:focus {
+        border-color: var(--theme-primary);
+        outline-color: var(--theme-primary);
+    }
+
+    ::selection {
+        background: var(--theme-primary);
+        color: #ffffff;
+    }
+
+    /* footer-specific-theme-start */
+    footer,
+    .footer,
+    .site-footer,
+    .main-footer {
+        background-color: var(--theme-footer-bg) !important;
+        color: var(--theme-footer-text) !important;
+        border-color: var(--theme-footer-border) !important;
+    }
+
+    footer h1,
+    footer h2,
+    footer h3,
+    footer h4,
+    footer h5,
+    footer h6,
+    footer .footer-title,
+    footer .widget-title,
+    .footer h1,
+    .footer h2,
+    .footer h3,
+    .footer h4,
+    .footer h5,
+    .footer h6,
+    .footer .footer-title,
+    .footer .widget-title,
+    .site-footer h1,
+    .site-footer h2,
+    .site-footer h3,
+    .site-footer h4,
+    .site-footer h5,
+    .site-footer h6,
+    .site-footer .footer-title,
+    .site-footer .widget-title {
+        color: var(--theme-footer-heading) !important;
+    }
+
+    footer p,
+    footer li,
+    footer span,
+    footer small,
+    footer div,
+    footer address,
+    .footer p,
+    .footer li,
+    .footer span,
+    .footer small,
+    .footer div,
+    .footer address,
+    .site-footer p,
+    .site-footer li,
+    .site-footer span,
+    .site-footer small,
+    .site-footer div,
+    .site-footer address {
+        color: var(--theme-footer-text);
+    }
+
+    footer a,
+    .footer a,
+    .site-footer a,
+    .main-footer a {
+        color: var(--theme-footer-link) !important;
+    }
+
+    footer a:hover,
+    .footer a:hover,
+    .site-footer a:hover,
+    .main-footer a:hover {
+        color: var(--theme-footer-link-hover) !important;
+    }
+
+    footer hr,
+    footer .border,
+    footer .divider,
+    footer .footer-bottom,
+    .footer hr,
+    .footer .border,
+    .footer .divider,
+    .footer .footer-bottom,
+    .site-footer hr,
+    .site-footer .border,
+    .site-footer .divider,
+    .site-footer .footer-bottom {
+        border-color: var(--theme-footer-border) !important;
+    }
+
+    footer svg,
+    footer i,
+    footer .social-icon,
+    footer .social-icons a,
+    .footer svg,
+    .footer i,
+    .footer .social-icon,
+    .footer .social-icons a,
+    .site-footer svg,
+    .site-footer i,
+    .site-footer .social-icon,
+    .site-footer .social-icons a {
+        color: var(--theme-footer-social) !important;
+        fill: currentColor;
+    }
+
+    footer .btn,
+    footer .button,
+    footer button,
+    footer input[type="submit"],
+    .footer .btn,
+    .footer .button,
+    .footer button,
+    .footer input[type="submit"],
+    .site-footer .btn,
+    .site-footer .button,
+    .site-footer button,
+    .site-footer input[type="submit"] {
+        background-color: var(--theme-button) !important;
+        border-color: var(--theme-button) !important;
+        color: #ffffff !important;
+    }
+
+    footer .btn:hover,
+    footer .button:hover,
+    footer button:hover,
+    footer input[type="submit"]:hover,
+    .footer .btn:hover,
+    .footer .button:hover,
+    .footer button:hover,
+    .footer input[type="submit"]:hover,
+    .site-footer .btn:hover,
+    .site-footer .button:hover,
+    .site-footer button:hover,
+    .site-footer input[type="submit"]:hover {
+        background-color: var(--theme-button-hover) !important;
+        border-color: var(--theme-button-hover) !important;
+        color: #ffffff !important;
+    }
+    /* footer-specific-theme-end */
+
+    /* frontend-slider-theme-coverage-start */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Slider / Hero Dynamic Theme Coverage
+    |--------------------------------------------------------------------------
+    | Slider tarafında hardcoded kalan accent, dot, badge, CTA ve aktif
+    | çizgi renklerini tema ayarlarına bağlar.
+    |--------------------------------------------------------------------------
+    */
+
+    .hero,
+    .main-hero,
+    .page-hero,
+    .slider,
+    .main-slider,
+    .home-slider,
+    .hero-slider,
+    .swiper,
+    .swiper-container,
+    .carousel,
+    .carousel-wrapper {
+        font-family: var(--theme-font) !important;
+    }
+
+    .hero h1,
+    .hero h2,
+    .hero h3,
+    .main-hero h1,
+    .main-hero h2,
+    .main-hero h3,
+    .page-hero h1,
+    .page-hero h2,
+    .page-hero h3,
+    .slider h1,
+    .slider h2,
+    .slider h3,
+    .main-slider h1,
+    .main-slider h2,
+    .main-slider h3,
+    .home-slider h1,
+    .home-slider h2,
+    .home-slider h3,
+    .hero-slider h1,
+    .hero-slider h2,
+    .hero-slider h3 {
+        font-family: var(--theme-font) !important;
+    }
+
+    .hero .badge,
+    .hero .tag,
+    .hero .label,
+    .hero .pill,
+    .main-hero .badge,
+    .main-hero .tag,
+    .main-hero .label,
+    .main-hero .pill,
+    .slider .badge,
+    .slider .tag,
+    .slider .label,
+    .slider .pill,
+    .main-slider .badge,
+    .main-slider .tag,
+    .main-slider .label,
+    .main-slider .pill,
+    .home-slider .badge,
+    .home-slider .tag,
+    .home-slider .label,
+    .home-slider .pill,
+    .hero-slider .badge,
+    .hero-slider .tag,
+    .hero-slider .label,
+    .hero-slider .pill,
+    .hero-badge,
+    .slider-badge,
+    .slide-badge {
+        background-color: color-mix(in srgb, var(--theme-accent) 18%, transparent) !important;
+        border-color: color-mix(in srgb, var(--theme-accent) 38%, transparent) !important;
+        color: #ffffff !important;
+    }
+
+    .hero .badge::before,
+    .hero .tag::before,
+    .hero .label::before,
+    .hero .pill::before,
+    .main-hero .badge::before,
+    .main-hero .tag::before,
+    .main-hero .label::before,
+    .main-hero .pill::before,
+    .slider .badge::before,
+    .slider .tag::before,
+    .slider .label::before,
+    .slider .pill::before,
+    .main-slider .badge::before,
+    .main-slider .tag::before,
+    .main-slider .label::before,
+    .main-slider .pill::before,
+    .home-slider .badge::before,
+    .home-slider .tag::before,
+    .home-slider .label::before,
+    .home-slider .pill::before,
+    .hero-badge::before,
+    .slider-badge::before,
+    .slide-badge::before {
+        background-color: var(--theme-accent) !important;
+        border-color: var(--theme-accent) !important;
+        box-shadow: 0 0 0 4px color-mix(in srgb, var(--theme-accent) 18%, transparent) !important;
+    }
+
+    .hero .btn,
+    .hero .button,
+    .hero a.btn,
+    .hero a.button,
+    .main-hero .btn,
+    .main-hero .button,
+    .main-hero a.btn,
+    .main-hero a.button,
+    .slider .btn,
+    .slider .button,
+    .slider a.btn,
+    .slider a.button,
+    .main-slider .btn,
+    .main-slider .button,
+    .main-slider a.btn,
+    .main-slider a.button,
+    .home-slider .btn,
+    .home-slider .button,
+    .home-slider a.btn,
+    .home-slider a.button,
+    .hero-slider .btn,
+    .hero-slider .button,
+    .hero-slider a.btn,
+    .hero-slider a.button,
+    .slide-button,
+    .slider-button,
+    .hero-button {
+        background-color: var(--theme-button) !important;
+        border-color: var(--theme-button) !important;
+        color: #ffffff !important;
+        border-radius: var(--theme-button-radius) !important;
+    }
+
+    .hero .btn:hover,
+    .hero .button:hover,
+    .hero a.btn:hover,
+    .hero a.button:hover,
+    .main-hero .btn:hover,
+    .main-hero .button:hover,
+    .main-hero a.btn:hover,
+    .main-hero a.button:hover,
+    .slider .btn:hover,
+    .slider .button:hover,
+    .slider a.btn:hover,
+    .slider a.button:hover,
+    .main-slider .btn:hover,
+    .main-slider .button:hover,
+    .main-slider a.btn:hover,
+    .main-slider a.button:hover,
+    .home-slider .btn:hover,
+    .home-slider .button:hover,
+    .home-slider a.btn:hover,
+    .home-slider a.button:hover,
+    .hero-slider .btn:hover,
+    .hero-slider .button:hover,
+    .hero-slider a.btn:hover,
+    .hero-slider a.button:hover,
+    .slide-button:hover,
+    .slider-button:hover,
+    .hero-button:hover {
+        background-color: var(--theme-button-hover) !important;
+        border-color: var(--theme-button-hover) !important;
+        color: #ffffff !important;
+    }
+
+    .swiper-pagination-bullet,
+    .swiper .swiper-pagination-bullet,
+    .swiper-container .swiper-pagination-bullet,
+    .slider .swiper-pagination-bullet,
+    .hero-slider .swiper-pagination-bullet,
+    .main-slider .swiper-pagination-bullet,
+    .home-slider .swiper-pagination-bullet,
+    .owl-dot span,
+    .owl-dots .owl-dot span,
+    .carousel-indicators button,
+    .carousel-indicators li,
+    .slick-dots li button,
+    .slick-dots li button::before,
+    .slider-dots span,
+    .slider-pagination span,
+    .hero-pagination span {
+        background-color: rgba(255, 255, 255, .46) !important;
+        border-color: rgba(255, 255, 255, .52) !important;
+        color: rgba(255, 255, 255, .46) !important;
+        opacity: 1 !important;
+    }
+
+    .swiper-pagination-bullet-active,
+    .swiper .swiper-pagination-bullet-active,
+    .swiper-container .swiper-pagination-bullet-active,
+    .slider .swiper-pagination-bullet-active,
+    .hero-slider .swiper-pagination-bullet-active,
+    .main-slider .swiper-pagination-bullet-active,
+    .home-slider .swiper-pagination-bullet-active,
+    .owl-dot.active span,
+    .owl-dots .owl-dot.active span,
+    .carousel-indicators .active,
+    .carousel-indicators button.active,
+    .slick-dots li.slick-active button,
+    .slick-dots li.slick-active button::before,
+    .slider-dots .active,
+    .slider-pagination .active,
+    .hero-pagination .active {
+        background-color: var(--theme-secondary) !important;
+        border-color: var(--theme-secondary) !important;
+        color: var(--theme-secondary) !important;
+        opacity: 1 !important;
+    }
+
+    .slider-progress,
+    .hero-progress,
+    .swiper-pagination-progressbar-fill,
+    .swiper-scrollbar-drag,
+    .active-line,
+    .accent-line,
+    .section-line,
+    .title-line,
+    .decor-line {
+        background-color: var(--theme-secondary) !important;
+        border-color: var(--theme-secondary) !important;
+    }
+
+    .hero .accent,
+    .hero .highlight,
+    .hero .subtitle,
+    .hero .section-subtitle,
+    .main-hero .accent,
+    .main-hero .highlight,
+    .main-hero .subtitle,
+    .main-hero .section-subtitle,
+    .slider .accent,
+    .slider .highlight,
+    .slider .subtitle,
+    .slider .section-subtitle,
+    .main-slider .accent,
+    .main-slider .highlight,
+    .main-slider .subtitle,
+    .main-slider .section-subtitle,
+    .home-slider .accent,
+    .home-slider .highlight,
+    .home-slider .subtitle,
+    .home-slider .section-subtitle,
+    .hero-slider .accent,
+    .hero-slider .highlight,
+    .hero-slider .subtitle,
+    .hero-slider .section-subtitle {
+        color: var(--theme-secondary) !important;
+    }
+
+    .hero .icon,
+    .main-hero .icon,
+    .slider .icon,
+    .main-slider .icon,
+    .home-slider .icon,
+    .hero-slider .icon,
+    .hero svg,
+    .main-hero svg,
+    .slider svg,
+    .main-slider svg,
+    .home-slider svg,
+    .hero-slider svg {
+        color: var(--theme-secondary) !important;
+        fill: currentColor;
+    }
+
+    .hero .card,
+    .main-hero .card,
+    .slider .card,
+    .main-slider .card,
+    .home-slider .card,
+    .hero-slider .card {
+        border-radius: var(--theme-card-radius) !important;
+        box-shadow: var(--theme-shadow) !important;
+    }
+
+    /* Eski hardcoded turuncu/sarı kalıntıları bastırmak için yaygın utility class kapsaması */
+    .text-orange,
+    .text-warning,
+    .text-yellow,
+    .orange,
+    .warning-color,
+    .yellow-color {
+        color: var(--theme-secondary) !important;
+    }
+
+    .bg-orange,
+    .bg-warning,
+    .bg-yellow,
+    .orange-bg,
+    .warning-bg,
+    .yellow-bg {
+        background-color: var(--theme-secondary) !important;
+    }
+
+    .border-orange,
+    .border-warning,
+    .border-yellow {
+        border-color: var(--theme-secondary) !important;
+    }
+
+    /* frontend-slider-theme-coverage-end */
+
+    /* slider-direct-controls-start */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Slider Direct Theme Controls
+    |--------------------------------------------------------------------------
+    | Slider içindeki hardcoded turuncu/sarı kalıntıları özellikle hedefler.
+    |--------------------------------------------------------------------------
+    */
+
+    .hero-badge,
+    .slider-badge,
+    .slide-badge,
+    .hero .badge,
+    .hero .tag,
+    .hero .pill,
+    .main-hero .badge,
+    .main-hero .tag,
+    .main-hero .pill,
+    .slider .badge,
+    .slider .tag,
+    .slider .pill,
+    .main-slider .badge,
+    .main-slider .tag,
+    .main-slider .pill,
+    .home-slider .badge,
+    .home-slider .tag,
+    .home-slider .pill,
+    .hero-slider .badge,
+    .hero-slider .tag,
+    .hero-slider .pill {
+        background: color-mix(in srgb, var(--theme-slider-badge-bg) 82%, transparent) !important;
+        border-color: color-mix(in srgb, var(--theme-slider-badge-bg) 92%, #ffffff 8%) !important;
+        color: var(--theme-slider-badge-text) !important;
+    }
+
+    .hero-badge::before,
+    .slider-badge::before,
+    .slide-badge::before,
+    .hero .badge::before,
+    .hero .tag::before,
+    .hero .pill::before,
+    .main-hero .badge::before,
+    .main-hero .tag::before,
+    .main-hero .pill::before,
+    .slider .badge::before,
+    .slider .tag::before,
+    .slider .pill::before,
+    .main-slider .badge::before,
+    .main-slider .tag::before,
+    .main-slider .pill::before,
+    .home-slider .badge::before,
+    .home-slider .tag::before,
+    .home-slider .pill::before,
+    .hero-slider .badge::before,
+    .hero-slider .tag::before,
+    .hero-slider .pill::before,
+    .hero-badge > span:first-child,
+    .slider-badge > span:first-child,
+    .slide-badge > span:first-child,
+    .hero .badge > span:first-child,
+    .slider .badge > span:first-child {
+        background: var(--theme-slider-badge-dot) !important;
+        border-color: var(--theme-slider-badge-dot) !important;
+        color: var(--theme-slider-badge-dot) !important;
+        box-shadow: 0 0 0 4px color-mix(in srgb, var(--theme-slider-badge-dot) 22%, transparent) !important;
+    }
+
+    .swiper-pagination-bullet,
+    .swiper .swiper-pagination-bullet,
+    .swiper-container .swiper-pagination-bullet,
+    .slider .swiper-pagination-bullet,
+    .hero-slider .swiper-pagination-bullet,
+    .main-slider .swiper-pagination-bullet,
+    .home-slider .swiper-pagination-bullet,
+    .owl-dot span,
+    .owl-dots .owl-dot span,
+    .carousel-indicators button,
+    .carousel-indicators li,
+    .slick-dots li button,
+    .slick-dots li button::before,
+    .slider-dots span,
+    .slider-pagination span,
+    .hero-pagination span {
+        background: var(--theme-slider-dot-passive) !important;
+        border-color: var(--theme-slider-dot-passive) !important;
+        color: var(--theme-slider-dot-passive) !important;
+        opacity: .7 !important;
+    }
+
+    .swiper-pagination-bullet-active,
+    .swiper .swiper-pagination-bullet-active,
+    .swiper-container .swiper-pagination-bullet-active,
+    .slider .swiper-pagination-bullet-active,
+    .hero-slider .swiper-pagination-bullet-active,
+    .main-slider .swiper-pagination-bullet-active,
+    .home-slider .swiper-pagination-bullet-active,
+    .owl-dot.active span,
+    .owl-dots .owl-dot.active span,
+    .carousel-indicators .active,
+    .carousel-indicators button.active,
+    .slick-dots li.slick-active button,
+    .slick-dots li.slick-active button::before,
+    .slider-dots .active,
+    .slider-pagination .active,
+    .hero-pagination .active {
+        background: var(--theme-slider-dot-active) !important;
+        border-color: var(--theme-slider-dot-active) !important;
+        color: var(--theme-slider-dot-active) !important;
+        opacity: 1 !important;
+    }
+
+    .hero .accent,
+    .hero .highlight,
+    .hero .subtitle,
+    .main-hero .accent,
+    .main-hero .highlight,
+    .main-hero .subtitle,
+    .slider .accent,
+    .slider .highlight,
+    .slider .subtitle,
+    .main-slider .accent,
+    .main-slider .highlight,
+    .main-slider .subtitle,
+    .home-slider .accent,
+    .home-slider .highlight,
+    .home-slider .subtitle,
+    .hero-slider .accent,
+    .hero-slider .highlight,
+    .hero-slider .subtitle,
+    .slider-progress,
+    .hero-progress,
+    .swiper-pagination-progressbar-fill,
+    .swiper-scrollbar-drag,
+    .active-line,
+    .accent-line,
+    .section-line,
+    .title-line,
+    .decor-line {
+        color: var(--theme-slider-accent) !important;
+        background-color: var(--theme-slider-accent) !important;
+        border-color: var(--theme-slider-accent) !important;
+    }
+
+    .hero [style*="#f59e0b"],
+    .hero [style*="#F59E0B"],
+    .hero [style*="#fbbf24"],
+    .hero [style*="#FBBF24"],
+    .hero [style*="orange"],
+    .slider [style*="#f59e0b"],
+    .slider [style*="#F59E0B"],
+    .slider [style*="#fbbf24"],
+    .slider [style*="#FBBF24"],
+    .slider [style*="orange"],
+    .main-slider [style*="#f59e0b"],
+    .main-slider [style*="#F59E0B"],
+    .main-slider [style*="#fbbf24"],
+    .main-slider [style*="#FBBF24"],
+    .main-slider [style*="orange"],
+    .home-slider [style*="#f59e0b"],
+    .home-slider [style*="#F59E0B"],
+    .home-slider [style*="#fbbf24"],
+    .home-slider [style*="#FBBF24"],
+    .home-slider [style*="orange"] {
+        color: var(--theme-slider-accent) !important;
+        border-color: var(--theme-slider-accent) !important;
+    }
+
+    /* slider-direct-controls-end */
+
+    /* frontend-theme-scope-refine-start */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Frontend Theme Scope Refinement
+    |--------------------------------------------------------------------------
+    | Tema motorunun frontend tarafında daha kontrollü çalışması için
+    | kapsam sınıfları ve muafiyet sınıfları.
+    |--------------------------------------------------------------------------
+    */
+
+    body.theme-enabled {
+        background: var(--theme-body-bg);
+        color: var(--theme-text);
+        font-family: var(--theme-font);
+    }
+
+    body.theme-enabled .theme-scope,
+    body.theme-enabled main,
+    body.theme-enabled .site-main,
+    body.theme-enabled .main-content,
+    body.theme-enabled .frontend-content {
+        color: var(--theme-text);
+        font-family: var(--theme-font);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Theme Ignore
+    |--------------------------------------------------------------------------
+    | Bu sınıf verilen alan tema motorundan etkilenmez.
+    |--------------------------------------------------------------------------
+    */
+
+    body.theme-enabled .theme-ignore,
+    body.theme-enabled .theme-ignore * {
+        all: revert-layer;
+    }
+
+    body.theme-enabled .theme-ignore {
+        font-family: inherit;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Typography Scope
+    |--------------------------------------------------------------------------
+    */
+
+    body.theme-enabled .theme-scope h1,
+    body.theme-enabled .theme-scope h2,
+    body.theme-enabled .theme-scope h3,
+    body.theme-enabled .theme-scope h4,
+    body.theme-enabled .theme-scope h5,
+    body.theme-enabled .theme-scope h6,
+    body.theme-enabled main h1,
+    body.theme-enabled main h2,
+    body.theme-enabled main h3,
+    body.theme-enabled main h4,
+    body.theme-enabled main h5,
+    body.theme-enabled main h6,
+    body.theme-enabled .site-main h1,
+    body.theme-enabled .site-main h2,
+    body.theme-enabled .site-main h3,
+    body.theme-enabled .site-main h4,
+    body.theme-enabled .site-main h5,
+    body.theme-enabled .site-main h6,
+    body.theme-enabled .section-title,
+    body.theme-enabled .page-title,
+    body.theme-enabled .hero-title,
+    body.theme-enabled .service-title,
+    body.theme-enabled .blog-title {
+        color: var(--theme-heading);
+        font-family: var(--theme-font);
+    }
+
+    body.theme-enabled .theme-scope p,
+    body.theme-enabled .theme-scope li,
+    body.theme-enabled .theme-scope span,
+    body.theme-enabled .theme-scope .text,
+    body.theme-enabled .theme-scope .description,
+    body.theme-enabled .theme-scope .content,
+    body.theme-enabled main p,
+    body.theme-enabled main li {
+        color: inherit;
+        font-family: var(--theme-font);
+    }
+
+    body.theme-enabled .theme-scope a,
+    body.theme-enabled main a,
+    body.theme-enabled .site-main a {
+        color: var(--theme-link);
+    }
+
+    body.theme-enabled .theme-scope a:hover,
+    body.theme-enabled main a:hover,
+    body.theme-enabled .site-main a:hover {
+        color: var(--theme-button-hover);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Container Scope
+    |--------------------------------------------------------------------------
+    */
+
+    body.theme-enabled .theme-container,
+    body.theme-enabled .container,
+    body.theme-enabled .site-container,
+    body.theme-enabled .main-container,
+    body.theme-enabled .page-container,
+    body.theme-enabled .wrapper {
+        max-width: var(--theme-container-width);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Header Scope
+    |--------------------------------------------------------------------------
+    */
+
+    body.theme-enabled header,
+    body.theme-enabled .header,
+    body.theme-enabled .site-header,
+    body.theme-enabled .navbar,
+    body.theme-enabled .main-header,
+    body.theme-enabled .top-header {
+        background-color: var(--theme-header-bg);
+        font-family: var(--theme-font);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Button Scope
+    |--------------------------------------------------------------------------
+    */
+
+    body.theme-enabled .theme-button,
+    body.theme-enabled .btn,
+    body.theme-enabled .button,
+    body.theme-enabled a.btn,
+    body.theme-enabled a.button,
+    body.theme-enabled .primary-button,
+    body.theme-enabled .cta-button,
+    body.theme-enabled button[type="submit"],
+    body.theme-enabled input[type="submit"] {
+        border-radius: var(--theme-button-radius);
+        font-family: var(--theme-font);
+    }
+
+    body.theme-enabled .theme-button,
+    body.theme-enabled .btn:not(.btn-secondary):not(.btn-outline):not(.outline):not(.btn-danger),
+    body.theme-enabled .button:not(.secondary):not(.outline),
+    body.theme-enabled a.btn-primary,
+    body.theme-enabled .primary-button,
+    body.theme-enabled .cta-button,
+    body.theme-enabled button[type="submit"],
+    body.theme-enabled input[type="submit"] {
+        background-color: var(--theme-button);
+        border-color: var(--theme-button);
+        color: #ffffff;
+    }
+
+    body.theme-enabled .theme-button:hover,
+    body.theme-enabled .btn:not(.btn-secondary):not(.btn-outline):not(.outline):not(.btn-danger):hover,
+    body.theme-enabled .button:not(.secondary):not(.outline):hover,
+    body.theme-enabled a.btn-primary:hover,
+    body.theme-enabled .primary-button:hover,
+    body.theme-enabled .cta-button:hover,
+    body.theme-enabled button[type="submit"]:hover,
+    body.theme-enabled input[type="submit"]:hover {
+        background-color: var(--theme-button-hover);
+        border-color: var(--theme-button-hover);
+        color: #ffffff;
+    }
+
+    body.theme-enabled .btn-secondary,
+    body.theme-enabled .button.secondary,
+    body.theme-enabled .btn-outline,
+    body.theme-enabled .outline,
+    body.theme-enabled .theme-button-secondary {
+        color: var(--theme-button);
+        border-color: var(--theme-button);
+        border-radius: var(--theme-button-radius);
+    }
+
+    body.theme-enabled .btn-secondary:hover,
+    body.theme-enabled .button.secondary:hover,
+    body.theme-enabled .btn-outline:hover,
+    body.theme-enabled .outline:hover,
+    body.theme-enabled .theme-button-secondary:hover {
+        background-color: var(--theme-button);
+        border-color: var(--theme-button);
+        color: #ffffff;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Card Scope
+    |--------------------------------------------------------------------------
+    */
+
+    body.theme-enabled .theme-card,
+    body.theme-enabled .card,
+    body.theme-enabled .service-card,
+    body.theme-enabled .blog-card,
+    body.theme-enabled .team-card,
+    body.theme-enabled .feature-card,
+    body.theme-enabled .contact-card,
+    body.theme-enabled .box,
+    body.theme-enabled .panel {
+        border-radius: var(--theme-card-radius);
+        box-shadow: var(--theme-shadow);
+        font-family: var(--theme-font);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Form Scope
+    |--------------------------------------------------------------------------
+    */
+
+    body.theme-enabled input,
+    body.theme-enabled textarea,
+    body.theme-enabled select {
+        border-radius: var(--theme-button-radius);
+        font-family: var(--theme-font);
+    }
+
+    body.theme-enabled input:focus,
+    body.theme-enabled textarea:focus,
+    body.theme-enabled select:focus {
+        border-color: var(--theme-primary);
+        outline-color: var(--theme-primary);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Badge / Accent Scope
+    |--------------------------------------------------------------------------
+    */
+
+    body.theme-enabled .theme-badge,
+    body.theme-enabled .badge,
+    body.theme-enabled .tag,
+    body.theme-enabled .label,
+    body.theme-enabled .pill {
+        background-color: color-mix(in srgb, var(--theme-accent) 14%, transparent);
+        color: var(--theme-accent);
+    }
+
+    body.theme-enabled .accent,
+    body.theme-enabled .highlight,
+    body.theme-enabled .subtitle,
+    body.theme-enabled .section-subtitle {
+        color: var(--theme-accent);
+    }
+
+    body.theme-enabled .primary-color {
+        color: var(--theme-primary);
+    }
+
+    body.theme-enabled .primary-bg {
+        background-color: var(--theme-primary);
+    }
+
+    body.theme-enabled .secondary-color {
+        color: var(--theme-secondary);
+    }
+
+    body.theme-enabled .secondary-bg {
+        background-color: var(--theme-secondary);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Footer Scope
+    |--------------------------------------------------------------------------
+    */
+
+    body.theme-enabled footer,
+    body.theme-enabled .footer,
+    body.theme-enabled .site-footer,
+    body.theme-enabled .main-footer,
+    body.theme-enabled .theme-footer {
+        background-color: var(--theme-footer-bg) !important;
+        color: var(--theme-footer-text) !important;
+        border-color: var(--theme-footer-border) !important;
+        font-family: var(--theme-font);
+    }
+
+    body.theme-enabled footer h1,
+    body.theme-enabled footer h2,
+    body.theme-enabled footer h3,
+    body.theme-enabled footer h4,
+    body.theme-enabled footer h5,
+    body.theme-enabled footer h6,
+    body.theme-enabled footer .footer-title,
+    body.theme-enabled footer .widget-title,
+    body.theme-enabled .footer h1,
+    body.theme-enabled .footer h2,
+    body.theme-enabled .footer h3,
+    body.theme-enabled .footer h4,
+    body.theme-enabled .footer h5,
+    body.theme-enabled .footer h6,
+    body.theme-enabled .footer .footer-title,
+    body.theme-enabled .footer .widget-title,
+    body.theme-enabled .site-footer h1,
+    body.theme-enabled .site-footer h2,
+    body.theme-enabled .site-footer h3,
+    body.theme-enabled .site-footer h4,
+    body.theme-enabled .site-footer h5,
+    body.theme-enabled .site-footer h6,
+    body.theme-enabled .site-footer .footer-title,
+    body.theme-enabled .site-footer .widget-title {
+        color: var(--theme-footer-heading) !important;
+    }
+
+    body.theme-enabled footer p,
+    body.theme-enabled footer li,
+    body.theme-enabled footer span,
+    body.theme-enabled footer small,
+    body.theme-enabled footer div,
+    body.theme-enabled footer address,
+    body.theme-enabled .footer p,
+    body.theme-enabled .footer li,
+    body.theme-enabled .footer span,
+    body.theme-enabled .footer small,
+    body.theme-enabled .footer div,
+    body.theme-enabled .footer address,
+    body.theme-enabled .site-footer p,
+    body.theme-enabled .site-footer li,
+    body.theme-enabled .site-footer span,
+    body.theme-enabled .site-footer small,
+    body.theme-enabled .site-footer div,
+    body.theme-enabled .site-footer address {
+        color: var(--theme-footer-text);
+    }
+
+    body.theme-enabled footer a,
+    body.theme-enabled .footer a,
+    body.theme-enabled .site-footer a,
+    body.theme-enabled .main-footer a {
+        color: var(--theme-footer-link) !important;
+    }
+
+    body.theme-enabled footer a:hover,
+    body.theme-enabled .footer a:hover,
+    body.theme-enabled .site-footer a:hover,
+    body.theme-enabled .main-footer a:hover {
+        color: var(--theme-footer-link-hover) !important;
+    }
+
+    body.theme-enabled footer hr,
+    body.theme-enabled footer .border,
+    body.theme-enabled footer .divider,
+    body.theme-enabled footer .footer-bottom,
+    body.theme-enabled .footer hr,
+    body.theme-enabled .footer .border,
+    body.theme-enabled .footer .divider,
+    body.theme-enabled .footer .footer-bottom,
+    body.theme-enabled .site-footer hr,
+    body.theme-enabled .site-footer .border,
+    body.theme-enabled .site-footer .divider,
+    body.theme-enabled .site-footer .footer-bottom {
+        border-color: var(--theme-footer-border) !important;
+    }
+
+    body.theme-enabled footer svg,
+    body.theme-enabled footer i,
+    body.theme-enabled footer .social-icon,
+    body.theme-enabled footer .social-icons a,
+    body.theme-enabled .footer svg,
+    body.theme-enabled .footer i,
+    body.theme-enabled .footer .social-icon,
+    body.theme-enabled .footer .social-icons a,
+    body.theme-enabled .site-footer svg,
+    body.theme-enabled .site-footer i,
+    body.theme-enabled .site-footer .social-icon,
+    body.theme-enabled .site-footer .social-icons a {
+        color: var(--theme-footer-social) !important;
+        fill: currentColor;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Slider Scope
+    |--------------------------------------------------------------------------
+    */
+
+    body.theme-enabled .theme-slider,
+    body.theme-enabled .hero,
+    body.theme-enabled .main-hero,
+    body.theme-enabled .page-hero,
+    body.theme-enabled .slider,
+    body.theme-enabled .main-slider,
+    body.theme-enabled .home-slider,
+    body.theme-enabled .hero-slider,
+    body.theme-enabled .swiper,
+    body.theme-enabled .swiper-container,
+    body.theme-enabled .carousel,
+    body.theme-enabled .carousel-wrapper {
+        font-family: var(--theme-font) !important;
+    }
+
+    body.theme-enabled .hero-badge,
+    body.theme-enabled .slider-badge,
+    body.theme-enabled .slide-badge,
+    body.theme-enabled .hero .badge,
+    body.theme-enabled .hero .tag,
+    body.theme-enabled .hero .pill,
+    body.theme-enabled .main-hero .badge,
+    body.theme-enabled .main-hero .tag,
+    body.theme-enabled .main-hero .pill,
+    body.theme-enabled .slider .badge,
+    body.theme-enabled .slider .tag,
+    body.theme-enabled .slider .pill,
+    body.theme-enabled .main-slider .badge,
+    body.theme-enabled .main-slider .tag,
+    body.theme-enabled .main-slider .pill,
+    body.theme-enabled .home-slider .badge,
+    body.theme-enabled .home-slider .tag,
+    body.theme-enabled .home-slider .pill,
+    body.theme-enabled .hero-slider .badge,
+    body.theme-enabled .hero-slider .tag,
+    body.theme-enabled .hero-slider .pill {
+        background: color-mix(in srgb, var(--theme-slider-badge-bg) 82%, transparent) !important;
+        border-color: color-mix(in srgb, var(--theme-slider-badge-bg) 92%, #ffffff 8%) !important;
+        color: var(--theme-slider-badge-text) !important;
+    }
+
+    body.theme-enabled .hero-badge::before,
+    body.theme-enabled .slider-badge::before,
+    body.theme-enabled .slide-badge::before,
+    body.theme-enabled .hero .badge::before,
+    body.theme-enabled .hero .tag::before,
+    body.theme-enabled .hero .pill::before,
+    body.theme-enabled .main-hero .badge::before,
+    body.theme-enabled .main-hero .tag::before,
+    body.theme-enabled .main-hero .pill::before,
+    body.theme-enabled .slider .badge::before,
+    body.theme-enabled .slider .tag::before,
+    body.theme-enabled .slider .pill::before,
+    body.theme-enabled .main-slider .badge::before,
+    body.theme-enabled .main-slider .tag::before,
+    body.theme-enabled .main-slider .pill::before,
+    body.theme-enabled .home-slider .badge::before,
+    body.theme-enabled .home-slider .tag::before,
+    body.theme-enabled .home-slider .pill::before,
+    body.theme-enabled .hero-slider .badge::before,
+    body.theme-enabled .hero-slider .tag::before,
+    body.theme-enabled .hero-slider .pill::before,
+    body.theme-enabled .hero-badge > span:first-child,
+    body.theme-enabled .slider-badge > span:first-child,
+    body.theme-enabled .slide-badge > span:first-child,
+    body.theme-enabled .hero .badge > span:first-child,
+    body.theme-enabled .slider .badge > span:first-child {
+        background: var(--theme-slider-badge-dot) !important;
+        border-color: var(--theme-slider-badge-dot) !important;
+        color: var(--theme-slider-badge-dot) !important;
+        box-shadow: 0 0 0 4px color-mix(in srgb, var(--theme-slider-badge-dot) 22%, transparent) !important;
+    }
+
+    body.theme-enabled .swiper-pagination-bullet,
+    body.theme-enabled .swiper .swiper-pagination-bullet,
+    body.theme-enabled .swiper-container .swiper-pagination-bullet,
+    body.theme-enabled .slider .swiper-pagination-bullet,
+    body.theme-enabled .hero-slider .swiper-pagination-bullet,
+    body.theme-enabled .main-slider .swiper-pagination-bullet,
+    body.theme-enabled .home-slider .swiper-pagination-bullet,
+    body.theme-enabled .owl-dot span,
+    body.theme-enabled .owl-dots .owl-dot span,
+    body.theme-enabled .carousel-indicators button,
+    body.theme-enabled .carousel-indicators li,
+    body.theme-enabled .slick-dots li button,
+    body.theme-enabled .slick-dots li button::before,
+    body.theme-enabled .slider-dots span,
+    body.theme-enabled .slider-pagination span,
+    body.theme-enabled .hero-pagination span {
+        background: var(--theme-slider-dot-passive) !important;
+        border-color: var(--theme-slider-dot-passive) !important;
+        color: var(--theme-slider-dot-passive) !important;
+        opacity: .72 !important;
+    }
+
+    body.theme-enabled .swiper-pagination-bullet-active,
+    body.theme-enabled .swiper .swiper-pagination-bullet-active,
+    body.theme-enabled .swiper-container .swiper-pagination-bullet-active,
+    body.theme-enabled .slider .swiper-pagination-bullet-active,
+    body.theme-enabled .hero-slider .swiper-pagination-bullet-active,
+    body.theme-enabled .main-slider .swiper-pagination-bullet-active,
+    body.theme-enabled .home-slider .swiper-pagination-bullet-active,
+    body.theme-enabled .owl-dot.active span,
+    body.theme-enabled .owl-dots .owl-dot.active span,
+    body.theme-enabled .carousel-indicators .active,
+    body.theme-enabled .carousel-indicators button.active,
+    body.theme-enabled .slick-dots li.slick-active button,
+    body.theme-enabled .slick-dots li.slick-active button::before,
+    body.theme-enabled .slider-dots .active,
+    body.theme-enabled .slider-pagination .active,
+    body.theme-enabled .hero-pagination .active {
+        background: var(--theme-slider-dot-active) !important;
+        border-color: var(--theme-slider-dot-active) !important;
+        color: var(--theme-slider-dot-active) !important;
+        opacity: 1 !important;
+    }
+
+    body.theme-enabled .hero .accent,
+    body.theme-enabled .hero .highlight,
+    body.theme-enabled .hero .subtitle,
+    body.theme-enabled .main-hero .accent,
+    body.theme-enabled .main-hero .highlight,
+    body.theme-enabled .main-hero .subtitle,
+    body.theme-enabled .slider .accent,
+    body.theme-enabled .slider .highlight,
+    body.theme-enabled .slider .subtitle,
+    body.theme-enabled .main-slider .accent,
+    body.theme-enabled .main-slider .highlight,
+    body.theme-enabled .main-slider .subtitle,
+    body.theme-enabled .home-slider .accent,
+    body.theme-enabled .home-slider .highlight,
+    body.theme-enabled .home-slider .subtitle,
+    body.theme-enabled .hero-slider .accent,
+    body.theme-enabled .hero-slider .highlight,
+    body.theme-enabled .hero-slider .subtitle,
+    body.theme-enabled .slider-progress,
+    body.theme-enabled .hero-progress,
+    body.theme-enabled .swiper-pagination-progressbar-fill,
+    body.theme-enabled .swiper-scrollbar-drag,
+    body.theme-enabled .active-line,
+    body.theme-enabled .accent-line,
+    body.theme-enabled .section-line,
+    body.theme-enabled .title-line,
+    body.theme-enabled .decor-line {
+        color: var(--theme-slider-accent) !important;
+        background-color: var(--theme-slider-accent) !important;
+        border-color: var(--theme-slider-accent) !important;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Theme Ignore Override
+    |--------------------------------------------------------------------------
+    | En sonda tekrar ederek kapsam dışı alanları geri sakinleştirir.
+    |--------------------------------------------------------------------------
+    */
+
+    body.theme-enabled .theme-ignore,
+    body.theme-enabled .theme-ignore * {
+        box-shadow: revert;
+        border-radius: revert;
+        color: revert;
+        background: revert;
+        border-color: revert;
+    }
+
+    /* frontend-theme-scope-refine-end */
+</style>

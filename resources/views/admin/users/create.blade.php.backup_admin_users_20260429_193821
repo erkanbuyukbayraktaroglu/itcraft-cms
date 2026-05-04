@@ -1,0 +1,21 @@
+@extends('admin.layouts.app')
+
+@section('title', 'Yeni Admin Ekle')
+@section('topbar_title', 'Yeni Admin Ekle')
+
+@section('content')
+<div class="page-title">
+    <h1>Yeni Admin Ekle</h1>
+    <p>Yönetim paneline erişebilecek yeni bir admin kullanıcısı oluştur.</p>
+</div>
+
+<form method="post" action="#">
+    @csrf
+
+    @include('admin.users.form')
+
+    <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:18px;">
+        <button type="submit" class="btn">Kaydet</button>
+</div>
+</form>
+@endsection

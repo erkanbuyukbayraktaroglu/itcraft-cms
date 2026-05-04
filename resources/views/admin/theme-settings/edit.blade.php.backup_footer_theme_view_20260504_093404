@@ -1,0 +1,542 @@
+@extends('admin.layouts.app')
+
+@section('title', 'Tema Ayarları')
+@section('topbar_title', 'Tema Ayarları')
+
+@section('content')
+<div class="page-title">
+    <div>
+        <h1>Tema Ayarları</h1>
+        <p>Site renkleri, butonları, yazı tipi ve genel görünüm ayarlarını buradan yönetebilirsin.</p>
+    </div>
+
+    <a href="{{ url('/') }}" target="_blank" class="btn btn-secondary">Siteyi Görüntüle</a>
+</div>
+
+@if(session('success'))
+    <div class="alert alert-success">{{ session('success') }}</div>
+@endif
+
+@if($errors->any())
+    <div class="alert alert-danger">
+        @foreach($errors->all() as $error)
+            <div>{{ $error }}</div>
+        @endforeach
+    </div>
+@endif
+
+<form method="post" action="{{ route('admin.theme-settings.update') }}">
+    @csrf
+
+    <div class="theme-settings-layout">
+        <div class="theme-settings-main">
+            <div class="card theme-card">
+                <div class="theme-section-title">
+                    <h2>Renkler</h2>
+                    <p>Sitenin genel renk karakterini belirler.</p>
+                </div>
+
+                <div class="theme-grid">
+                    @php
+                        $colorFields = [
+                            'theme_primary_color' => 'Ana Renk',
+                            'theme_secondary_color' => 'İkincil Renk',
+                            'theme_accent_color' => 'Vurgu Rengi',
+                            'theme_header_bg' => 'Header Arka Plan',
+                            'theme_footer_bg' => 'Footer Arka Plan',
+                            'theme_body_bg' => 'Body Arka Plan',
+                            'theme_heading_color' => 'Başlık Rengi',
+                            'theme_text_color' => 'Yazı Rengi',
+                            'theme_link_color' => 'Link Rengi',
+                        ];
+                    @endphp
+
+                    @foreach($colorFields as $field => $label)
+                        <div class="theme-field">
+                            <label for="{{ $field }}">{{ $label }}</label>
+                            <div class="color-input-row">
+                                <input
+                                    type="color"
+                                    id="{{ $field }}_picker"
+                                    value="{{ old($field, $settings->{$field} ?? '#000000') }}"
+                                    oninput="document.getElementById('{{ $field }}').value=this.value; updateThemePreview();"
+                                >
+                                <input
+                                    type="text"
+                                    id="{{ $field }}"
+                                    name="{{ $field }}"
+                                    class="form-control"
+                                    value="{{ old($field, $settings->{$field} ?? '') }}"
+                                    oninput="document.getElementById('{{ $field }}_picker').value=this.value; updateThemePreview();"
+                                >
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+
+            <div class="card theme-card">
+                <div class="theme-section-title">
+                    <h2>Butonlar</h2>
+                    <p>CTA, form ve link butonlarının görünümünü belirler.</p>
+                </div>
+
+                <div class="theme-grid">
+                    <div class="theme-field">
+                        <label for="theme_button_color">Buton Rengi</label>
+                        <div class="color-input-row">
+                            <input
+                                type="color"
+                                id="theme_button_color_picker"
+                                value="{{ old('theme_button_color', $settings->theme_button_color ?? '#1d4ed8') }}"
+                                oninput="document.getElementById('theme_button_color').value=this.value; updateThemePreview();"
+                            >
+                            <input
+                                type="text"
+                                id="theme_button_color"
+                                name="theme_button_color"
+                                class="form-control"
+                                value="{{ old('theme_button_color', $settings->theme_button_color ?? '') }}"
+                                oninput="document.getElementById('theme_button_color_picker').value=this.value; updateThemePreview();"
+                            >
+                        </div>
+                    </div>
+
+                    <div class="theme-field">
+                        <label for="theme_button_hover_color">Buton Hover Rengi</label>
+                        <div class="color-input-row">
+                            <input
+                                type="color"
+                                id="theme_button_hover_color_picker"
+                                value="{{ old('theme_button_hover_color', $settings->theme_button_hover_color ?? '#1e40af') }}"
+                                oninput="document.getElementById('theme_button_hover_color').value=this.value; updateThemePreview();"
+                            >
+                            <input
+                                type="text"
+                                id="theme_button_hover_color"
+                                name="theme_button_hover_color"
+                                class="form-control"
+                                value="{{ old('theme_button_hover_color', $settings->theme_button_hover_color ?? '') }}"
+                                oninput="document.getElementById('theme_button_hover_color_picker').value=this.value; updateThemePreview();"
+                            >
+                        </div>
+                    </div>
+
+                    <div class="theme-field">
+                        <label for="theme_button_radius">Buton Radius</label>
+                        <input
+                            type="text"
+                            id="theme_button_radius"
+                            name="theme_button_radius"
+                            class="form-control"
+                            value="{{ old('theme_button_radius', $settings->theme_button_radius ?? '12px') }}"
+                            placeholder="12px"
+                            oninput="updateThemePreview();"
+                        >
+                    </div>
+
+                    <div class="theme-field">
+                        <label for="theme_card_radius">Kart Radius</label>
+                        <input
+                            type="text"
+                            id="theme_card_radius"
+                            name="theme_card_radius"
+                            class="form-control"
+                            value="{{ old('theme_card_radius', $settings->theme_card_radius ?? '18px') }}"
+                            placeholder="18px"
+                            oninput="updateThemePreview();"
+                        >
+                    </div>
+                </div>
+            </div>
+
+            <div class="card theme-card">
+                <div class="theme-section-title">
+                    <h2>Tipografi ve Layout</h2>
+                    <p>Yazı tipi, container genişliği ve gölge seviyesi ayarları.</p>
+                </div>
+
+                <div class="theme-grid">
+                    <div class="theme-field">
+                        <label for="theme_font_family">Font Ailesi</label>
+                        <select id="theme_font_family" name="theme_font_family" class="form-control" onchange="updateThemePreview();">
+                            @foreach($fonts as $value => $label)
+                                <option value="{{ $value }}" @selected(old('theme_font_family', $settings->theme_font_family ?? '') === $value)>
+                                    {{ $label }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="theme-field">
+                        <label for="theme_container_width">Container Genişliği</label>
+                        <input
+                            type="text"
+                            id="theme_container_width"
+                            name="theme_container_width"
+                            class="form-control"
+                            value="{{ old('theme_container_width', $settings->theme_container_width ?? '1200px') }}"
+                            placeholder="1200px"
+                            oninput="updateThemePreview();"
+                        >
+                    </div>
+
+                    <div class="theme-field">
+                        <label for="theme_shadow_level">Gölge Seviyesi</label>
+                        <select id="theme_shadow_level" name="theme_shadow_level" class="form-control" onchange="updateThemePreview();">
+                            @foreach($shadowLevels as $value => $label)
+                                <option value="{{ $value }}" @selected(old('theme_shadow_level', $settings->theme_shadow_level ?? '') === $value)>
+                                    {{ $label }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="theme-actions">
+                <button type="submit" class="btn">Tema Ayarlarını Kaydet</button>
+
+                <button
+                    type="submit"
+                    formaction="{{ route('admin.theme-settings.reset') }}"
+                    class="btn btn-secondary"
+                    onclick="return confirm('Tema ayarlarını varsayılan değerlere döndürmek istiyor musun?');"
+                >
+                    Varsayılana Döndür
+                </button>
+            </div>
+        </div>
+
+        <div class="theme-preview-panel">
+            <div class="theme-preview-sticky">
+                <h2>Canlı Önizleme</h2>
+                <p>Kaydetmeden önce genel görünümü buradan kontrol edebilirsin.</p>
+
+                <div id="themePreview" class="theme-preview-box">
+                    <div class="preview-header">
+                        <span class="preview-logo">Logo</span>
+                        <span class="preview-nav">Menü</span>
+                    </div>
+
+                    <div class="preview-hero">
+                        <span class="preview-tag">Kurumsal Web Sitesi</span>
+                        <h3>Dinamik Tema Önizleme</h3>
+                        <p>Renkler, butonlar, font ve radius ayarları bu alanda örnek olarak gösterilir.</p>
+
+                        <div class="preview-buttons">
+                            <span class="preview-btn primary">Teklif Al</span>
+                            <span class="preview-btn secondary">Detaylar</span>
+                        </div>
+                    </div>
+
+                    <div class="preview-card">
+                        <h4>Hizmet Kartı</h4>
+                        <p>Bu kart radius ve gölge seviyesini temsil eder.</p>
+                    </div>
+
+                    <div class="preview-footer">
+                        Footer Alanı
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<style>
+    .theme-settings-layout {
+        display:grid;
+        grid-template-columns:minmax(0, 1fr) 380px;
+        gap:22px;
+        align-items:start;
+    }
+
+    .theme-card {
+        margin-bottom:18px;
+    }
+
+    .theme-section-title {
+        margin-bottom:18px;
+    }
+
+    .theme-section-title h2 {
+        font-size:21px;
+        margin:0 0 5px;
+        letter-spacing:-.03em;
+    }
+
+    .theme-section-title p {
+        margin:0;
+        color:#64748b;
+    }
+
+    .theme-grid {
+        display:grid;
+        grid-template-columns:repeat(3, minmax(0, 1fr));
+        gap:16px;
+    }
+
+    .theme-field label {
+        display:block;
+        font-weight:800;
+        margin-bottom:7px;
+        color:#334155;
+    }
+
+    .color-input-row {
+        display:grid;
+        grid-template-columns:48px minmax(0, 1fr);
+        gap:9px;
+        align-items:center;
+    }
+
+    .color-input-row input[type="color"] {
+        width:48px;
+        height:42px;
+        border:1px solid #e5e7eb;
+        border-radius:12px;
+        padding:3px;
+        background:#fff;
+    }
+
+    .theme-actions {
+        display:flex;
+        gap:10px;
+        flex-wrap:wrap;
+        margin-bottom:24px;
+    }
+
+    .theme-preview-sticky {
+        position:sticky;
+        top:20px;
+    }
+
+    .theme-preview-sticky h2 {
+        margin:0 0 5px;
+        letter-spacing:-.03em;
+    }
+
+    .theme-preview-sticky p {
+        margin:0 0 14px;
+        color:#64748b;
+    }
+
+    .theme-preview-box {
+        overflow:hidden;
+        border:1px solid #e5e7eb;
+        border-radius:22px;
+        background:#fff;
+        box-shadow:0 18px 40px rgba(15,23,42,.10);
+    }
+
+    .preview-header {
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        padding:16px 18px;
+        background:#fff;
+        border-bottom:1px solid #e5e7eb;
+    }
+
+    .preview-logo {
+        font-weight:950;
+        color:#111827;
+    }
+
+    .preview-nav {
+        font-size:13px;
+        font-weight:800;
+        color:#64748b;
+    }
+
+    .preview-hero {
+        padding:26px 22px;
+        background:#f8fafc;
+    }
+
+    .preview-tag {
+        display:inline-flex;
+        padding:5px 10px;
+        border-radius:999px;
+        font-size:12px;
+        font-weight:900;
+        background:#e0f2fe;
+        color:#0369a1;
+        margin-bottom:12px;
+    }
+
+    .preview-hero h3 {
+        font-size:27px;
+        line-height:1.08;
+        margin:0 0 10px;
+        letter-spacing:-.05em;
+    }
+
+    .preview-hero p {
+        margin:0 0 16px;
+        color:#475569;
+        line-height:1.55;
+    }
+
+    .preview-buttons {
+        display:flex;
+        gap:10px;
+        flex-wrap:wrap;
+    }
+
+    .preview-btn {
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
+        min-height:40px;
+        padding:10px 15px;
+        font-weight:900;
+        border-radius:12px;
+        font-size:14px;
+    }
+
+    .preview-btn.primary {
+        color:#fff;
+        background:#1d4ed8;
+    }
+
+    .preview-btn.secondary {
+        color:#1d4ed8;
+        background:#fff;
+        border:1px solid #bfdbfe;
+    }
+
+    .preview-card {
+        margin:18px;
+        padding:18px;
+        border:1px solid #e5e7eb;
+        border-radius:18px;
+        box-shadow:0 14px 30px rgba(15,23,42,.08);
+    }
+
+    .preview-card h4 {
+        margin:0 0 8px;
+        font-size:18px;
+    }
+
+    .preview-card p {
+        margin:0;
+        color:#64748b;
+    }
+
+    .preview-footer {
+        padding:16px 18px;
+        background:#111827;
+        color:#fff;
+        font-weight:800;
+    }
+
+    @media (max-width: 1180px) {
+        .theme-settings-layout {
+            grid-template-columns:1fr;
+        }
+
+        .theme-preview-sticky {
+            position:static;
+        }
+
+        .theme-grid {
+            grid-template-columns:repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @media (max-width: 640px) {
+        .theme-grid {
+            grid-template-columns:1fr;
+        }
+    }
+</style>
+
+<script>
+    function getThemeValue(id, fallback) {
+        var el = document.getElementById(id);
+
+        if (!el || !el.value) {
+            return fallback;
+        }
+
+        return el.value;
+    }
+
+    function shadowValue(level) {
+        if (level === 'none') return 'none';
+        if (level === 'soft') return '0 10px 24px rgba(15,23,42,.06)';
+        if (level === 'strong') return '0 22px 50px rgba(15,23,42,.18)';
+
+        return '0 16px 36px rgba(15,23,42,.10)';
+    }
+
+    function updateThemePreview() {
+        var preview = document.getElementById('themePreview');
+
+        if (!preview) {
+            return;
+        }
+
+        var primary = getThemeValue('theme_primary_color', '#1d4ed8');
+        var secondary = getThemeValue('theme_secondary_color', '#f59e0b');
+        var accent = getThemeValue('theme_accent_color', '#0ea5e9');
+        var button = getThemeValue('theme_button_color', '#1d4ed8');
+        var headerBg = getThemeValue('theme_header_bg', '#ffffff');
+        var footerBg = getThemeValue('theme_footer_bg', '#111827');
+        var bodyBg = getThemeValue('theme_body_bg', '#ffffff');
+        var heading = getThemeValue('theme_heading_color', '#111827');
+        var text = getThemeValue('theme_text_color', '#374151');
+        var link = getThemeValue('theme_link_color', '#1d4ed8');
+        var font = getThemeValue('theme_font_family', 'Inter, Arial, sans-serif');
+        var buttonRadius = getThemeValue('theme_button_radius', '12px');
+        var cardRadius = getThemeValue('theme_card_radius', '18px');
+        var shadow = shadowValue(getThemeValue('theme_shadow_level', 'medium'));
+
+        preview.style.fontFamily = font;
+        preview.style.background = bodyBg;
+        preview.style.boxShadow = shadow;
+
+        var header = preview.querySelector('.preview-header');
+        var tag = preview.querySelector('.preview-tag');
+        var hero = preview.querySelector('.preview-hero');
+        var h3 = preview.querySelector('.preview-hero h3');
+        var p = preview.querySelector('.preview-hero p');
+        var primaryBtn = preview.querySelector('.preview-btn.primary');
+        var secondaryBtn = preview.querySelector('.preview-btn.secondary');
+        var card = preview.querySelector('.preview-card');
+        var footer = preview.querySelector('.preview-footer');
+
+        if (header) header.style.background = headerBg;
+        if (tag) {
+            tag.style.background = accent + '22';
+            tag.style.color = accent;
+        }
+
+        if (hero) hero.style.background = bodyBg;
+        if (h3) h3.style.color = heading;
+        if (p) p.style.color = text;
+
+        if (primaryBtn) {
+            primaryBtn.style.background = button;
+            primaryBtn.style.borderRadius = buttonRadius;
+        }
+
+        if (secondaryBtn) {
+            secondaryBtn.style.color = link;
+            secondaryBtn.style.borderColor = primary + '55';
+            secondaryBtn.style.borderRadius = buttonRadius;
+        }
+
+        if (card) {
+            card.style.borderRadius = cardRadius;
+            card.style.boxShadow = shadow;
+        }
+
+        if (footer) footer.style.background = footerBg;
+    }
+
+    document.addEventListener('DOMContentLoaded', updateThemePreview);
+</script>
+@endsection

@@ -1,0 +1,155 @@
+<form method="post" action="{{ $action }}">
+    @csrf
+
+    @if($method !== 'POST')
+        @method($method)
+    @endif
+
+    @if($errors->any())
+        <div class="alert-error">
+            Lütfen form alanlarını kontrol edin.
+        </div>
+    @endif
+
+    <div class="card" style="margin-bottom:22px;">
+        <h2 style="margin-top:0;">Temel Bilgiler</h2>
+
+        <div class="form-grid form-grid-2">
+            <div>
+                <label for="title">Başlık</label>
+                <input class="form-control" type="text" id="title" name="title"
+                       value="{{ old('title', $service->title ?? '') }}" required>
+                @error('title') <small class="form-error">{{ $message }}</small> @enderror
+            </div>
+
+            <div>
+                <label for="slug">Slug</label>
+                <input class="form-control" type="text" id="slug" name="slug"
+                       value="{{ old('slug', $service->
+slug ?? '') }}"
+                       placeholder="Boş bırakırsan başlıktan otomatik oluşur">
+                @error('slug') <small class="form-error">{{ $message }}</small> @enderror
+            </div>
+        </div>
+
+        <label for="summary">Kısa Açıklama / Özet</label>
+        <textarea class="form-control" id="summary" name="summary" rows="3">{{ old('summary', $service->summary ?? '') }}</textarea>
+        @error('summary') <small class="form-error">{{ $message }}</small> @enderror
+
+        <label for="content">İçerik</label>
+        <textarea class="form-control editor-area rich-editor" id="content" name="content" rows="14">{{ old('content', $service->content ?? '') }}</textarea>
+<small class="editor-help">Bu alan zengin metin editörü ile düzenlenir. Başlık, liste, link ve tablo ekleyebilirsin.</small>
+        @error('content') <small class="form-error">{{ $message }}</small> @enderror
+
+        <div class="form-grid form-grid-3">
+            <div>
+                <label for="icon">Icon</label>
+                <input class="form-control" type="text" id="icon" name="icon"
+                       value="{{ old('icon', $service->icon ?? '') }}"
+                       placeholder="briefcase, shield, globe vb.">
+                @error('icon') <small class="form-error">{{ $message }}</small> @enderror
+            </div>
+
+            <div>
+                <label for="sort_order">Sıralama</label>
+                <input class="form-control" type="number" id="sort_order" name="sort_order"
+                       value="{{ old('sort_order', $service->sort_order ?? 0) }}">
+                @error('sort_order') <small class="form-error">{{ $message }}</small> @enderror
+            </div>
+
+            <div>
+                <label for="published_at">Yayın Tarihi</label>
+                <input class="form-control" type="datetime-local" id="published_at" name="published_at"
+                       value="{{ old('published_at', isset($service) && $service?->published_at ? $service->published_at->format('Y-m-d\TH:i') : now()->format('Y-m-d\TH:i')) }}">
+                @error('published_at') <small class="form-error">{{ $message }}</small> @enderror
+            </div>
+        </div>
+
+        <label for="image">Görsel URL / Path</label>
+        <input class="form-control" type="text" id="image" name="image"
+               value="{{ old('image', $service->image ?? '') }}"
+               placeholder="uploads/services/ornek.jpg veya tam URL">
+        @error('image') <small class="form-error">{{ $message }}</small> @enderror
+
+        <div class="checkbox-row">
+            <label>
+                <input type="checkbox" name="is_featured" value="1" {{ old('is_featured', $service->is_featured ?? true) ? 'checked' : '' }}>
+                Anasayfada öne çıkar
+            </label>
+
+            <label>
+                <input type="checkbox" name="is_active" value="1" {{ old('is_active', $service->is_active ?? true) ? 'checked' : '' }}>
+                Aktif
+            </label>
+        </div>
+    </div>
+
+    <div class="card" style="margin-bottom:22px;">
+        <h2 style="margin-top:0;">SEO Ayarları</h2>
+
+        <label for="meta_title">Meta Başlık</label>
+        <input class="form-control" type="text" id="meta_title" name="meta_title"
+               value="{{ old('meta_title', $service->meta_title ?? '') }}">
+        @error('meta_title') <small class="form-error">{{ $message }}</small> @enderror
+
+        <label for="meta_description">Meta Açıklama</label>
+        <textarea class="form-control" id="meta_description" name="meta_description" rows="3">{{ old('meta_description', $service->meta_description ?? '') }}</textarea>
+        @error('meta_description') <small class="form-error">{{ $message }}</small> @enderror
+
+        <label for="meta_keywords">Meta Anahtar Kelimeler</label>
+        <input class="form-control" type="text" id="meta_keywords" name="meta_keywords"
+               value="{{ old('meta_keywords', $service->meta_keywords ?? '') }}"
+               placeholder="kelime1, kelime2, kelime3">
+        @error('meta_keywords') <small class="form-error">{{ $message }}</small> @enderror
+
+        <label for="canonical_url">Canonical URL</label>
+        <input class="form-control" type="text" id="canonical_url" name="canonical_url"
+               value="{{ old('canonical_url', $service->canonical_url ?? '') }}">
+        @error('canonical_url') <small class="form-error">{{ $message }}</small> @enderror
+
+        <div class="form-grid form-grid-2">
+            <div>
+                <label for="robots_index">Robots Index</label>
+                @php $robotsIndex = old('robots_index', $service->robots_index ?? 'index'); @endphp
+                <select class="form-control" id="robots_index" name="robots_index">
+                    <option value="index" {{ $robotsIndex === 'index' ? 'selected' : '' }}>index</option>
+                    <option value="noindex" {{ $robotsIndex === 'noindex' ? 'selected' : '' }}>noindex</option>
+                </select>
+            </div>
+
+            <div>
+                <label for="robots_follow">Robots Follow</label>
+                @php $robotsFollow = old('robots_follow', $service->robots_follow ?? 'follow'); @endphp
+                <select class="form-control" id="robots_follow" name="robots_follow">
+                    <option value="follow" {{ $robotsFollow === 'follow' ? 'selected' : '' }}>follow</option>
+                    <option value="nofollow" {{ $robotsFollow === 'nofollow' ? 'selected' : '' }}>nofollow</option>
+                </select>
+            </div>
+        </div>
+
+        <label for="og_title">Open Graph Başlık</label>
+        <input class="form-control" type="text" id="og_title" name="og_title"
+               value="{{ old('og_title', $service->og_title ?? '') }}">
+
+        <label for="og_description">Open Graph Açıklama</label>
+        <textarea class="form-control" id="og_description" name="og_description" rows="3">{{ old('og_description', $service->og_description ?? '') }}</textarea>
+
+        <label for="og_image">Open Graph Görsel</label>
+        <input class="form-control" type="text" id="og_image" name="og_image"
+               value="{{ old('og_image', $service->og_image ?? '') }}"
+               placeholder="uploads/og/ornek.jpg veya tam URL">
+
+        <label for="schema_type">Schema Type</label>
+        <select class="form-control" id="schema_type" name="schema_type">
+            @php $schemaValue = old('schema_type', $service->schema_type ?? 'Service'); @endphp
+            @foreach(['Service', 'WebPage', 'Organization', 'LocalBusiness', 'LegalService', 'ProfessionalService'] as $schema)
+                <option value="{{ $schema }}" {{ $schemaValue === $schema ? 'selected' : '' }}>{{ $schema }}</option>
+            @endforeach
+        </select>
+    </div>
+
+    <div style="display:flex; gap:12px; flex-wrap:wrap;">
+        <button type="submit" class="btn">{{ $buttonText }}</button>
+        <a href="{{ route('admin.services.index') }}" class="btn btn-secondary">Geri Dön</a>
+    </div>
+</form>

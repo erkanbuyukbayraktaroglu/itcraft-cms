@@ -1,0 +1,43 @@
+# ==========================================================
+# ITCRAFT Corporate CMS - Laravel Public .htaccess
+# Amaç:
+# - Laravel route sistemini çalıştırmak
+# - /admin, /iletisim, /blog gibi route'ları index.php'ye göndermek
+# - Var olan gerçek dosyaları doğrudan servis etmek
+# ==========================================================
+
+<IfModule mod_rewrite.c>
+    <IfModule mod_negotiation.c>
+        Options -MultiViews -Indexes
+    </IfModule>
+
+    RewriteEngine On
+
+    # ------------------------------------------------------
+    # Authorization Header
+    # ------------------------------------------------------
+    RewriteCond %{HTTP:Authorization} .
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+    # ------------------------------------------------------
+    # Sonunda slash varsa ve klasör değilse temizle
+    # ------------------------------------------------------
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_URI} (.+)/$
+    RewriteRule ^ %1 [L,R=301]
+
+    # ------------------------------------------------------
+    # Var olan dosya ve klasörleri direkt servis et
+    # Örnek: uploads, css, js, images
+    # ------------------------------------------------------
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+
+    # ------------------------------------------------------
+    # Laravel route sistemi
+    # /admin/login, /admin/dashboard, /iletisim vb.
+    # tamamı index.php'ye gider
+    # ------------------------------------------------------
+    RewriteRule ^ index.php [L]
+</IfModule>

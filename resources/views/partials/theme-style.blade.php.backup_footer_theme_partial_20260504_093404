@@ -1,0 +1,266 @@
+@php
+    /*
+    |--------------------------------------------------------------------------
+    | Frontend Dynamic Theme Style
+    |--------------------------------------------------------------------------
+    | Bu dosya site_settings tablosundaki tema ayarlarından CSS değişkenleri üretir.
+    | Admin panelden yönetilir: /admin/theme-settings
+    |--------------------------------------------------------------------------
+    */
+
+    $themeSettings = null;
+
+    try {
+        if (\Illuminate\Support\Facades\Schema::hasTable('site_settings')) {
+            $themeSettings = \Illuminate\Support\Facades\DB::table('site_settings')->orderBy('id')->first();
+        }
+    } catch (\Throwable $exception) {
+        $themeSettings = null;
+    }
+
+    $themeValue = function (string $key, string $fallback) use ($themeSettings): string {
+        if (!$themeSettings) {
+            return $fallback;
+        }
+
+        $value = $themeSettings->{$key} ?? null;
+
+        if ($value === null || trim((string) $value) === '') {
+            return $fallback;
+        }
+
+        return trim((string) $value);
+    };
+
+    $shadowLevel = $themeValue('theme_shadow_level', 'medium');
+
+    $themeShadow = match ($shadowLevel) {
+        'none' => 'none',
+        'soft' => '0 10px 24px rgba(15, 23, 42, .06)',
+        'strong' => '0 22px 50px rgba(15, 23, 42, .18)',
+        default => '0 16px 36px rgba(15, 23, 42, .10)',
+    };
+@endphp
+
+<style id="frontend-dynamic-theme">
+    :root {
+        --theme-primary: {{ $themeValue('theme_primary_color', '#1d4ed8') }};
+        --theme-secondary: {{ $themeValue('theme_secondary_color', '#f59e0b') }};
+        --theme-accent: {{ $themeValue('theme_accent_color', '#0ea5e9') }};
+
+        --theme-button: {{ $themeValue('theme_button_color', '#1d4ed8') }};
+        --theme-button-hover: {{ $themeValue('theme_button_hover_color', '#1e40af') }};
+
+        --theme-header-bg: {{ $themeValue('theme_header_bg', '#ffffff') }};
+        --theme-footer-bg: {{ $themeValue('theme_footer_bg', '#111827') }};
+        --theme-body-bg: {{ $themeValue('theme_body_bg', '#ffffff') }};
+
+        --theme-heading: {{ $themeValue('theme_heading_color', '#111827') }};
+        --theme-text: {{ $themeValue('theme_text_color', '#374151') }};
+        --theme-link: {{ $themeValue('theme_link_color', '#1d4ed8') }};
+
+        --theme-font: {{ $themeValue('theme_font_family', 'Inter, Arial, sans-serif') }};
+        --theme-button-radius: {{ $themeValue('theme_button_radius', '12px') }};
+        --theme-card-radius: {{ $themeValue('theme_card_radius', '18px') }};
+        --theme-container-width: {{ $themeValue('theme_container_width', '1200px') }};
+        --theme-shadow: {{ $themeShadow }};
+    }
+
+    html,
+    body {
+        background: var(--theme-body-bg);
+        color: var(--theme-text);
+        font-family: var(--theme-font);
+    }
+
+    body {
+        color: var(--theme-text);
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    .section-title,
+    .page-title,
+    .hero-title,
+    .service-title,
+    .blog-title {
+        color: var(--theme-heading);
+        font-family: var(--theme-font);
+    }
+
+    p,
+    li,
+    span,
+    .text,
+    .description,
+    .content {
+        font-family: var(--theme-font);
+    }
+
+    a {
+        color: var(--theme-link);
+    }
+
+    a:hover {
+        color: var(--theme-button-hover);
+    }
+
+    .container,
+    .site-container,
+    .main-container,
+    .page-container,
+    .wrapper {
+        max-width: var(--theme-container-width);
+    }
+
+    header,
+    .header,
+    .site-header,
+    .navbar,
+    .main-header,
+    .top-header {
+        background-color: var(--theme-header-bg);
+    }
+
+    footer,
+    .footer,
+    .site-footer,
+    .main-footer {
+        background-color: var(--theme-footer-bg);
+    }
+
+    .btn,
+    .button,
+    button,
+    input[type="submit"],
+    input[type="button"],
+    a.btn,
+    a.button,
+    .theme-button,
+    .primary-button,
+    .cta-button {
+        border-radius: var(--theme-button-radius);
+    }
+
+    .btn:not(.btn-secondary):not(.btn-outline):not(.outline),
+    .button:not(.secondary):not(.outline),
+    button[type="submit"],
+    input[type="submit"],
+    a.btn-primary,
+    .theme-button,
+    .primary-button,
+    .cta-button {
+        background-color: var(--theme-button);
+        border-color: var(--theme-button);
+        color: #ffffff;
+    }
+
+    .btn:not(.btn-secondary):not(.btn-outline):not(.outline):hover,
+    .button:not(.secondary):not(.outline):hover,
+    button[type="submit"]:hover,
+    input[type="submit"]:hover,
+    a.btn-primary:hover,
+    .theme-button:hover,
+    .primary-button:hover,
+    .cta-button:hover {
+        background-color: var(--theme-button-hover);
+        border-color: var(--theme-button-hover);
+        color: #ffffff;
+    }
+
+    .btn-secondary,
+    .button.secondary,
+    .btn-outline,
+    .outline {
+        color: var(--theme-button);
+        border-color: var(--theme-button);
+    }
+
+    .btn-secondary:hover,
+    .button.secondary:hover,
+    .btn-outline:hover,
+    .outline:hover {
+        background-color: var(--theme-button);
+        border-color: var(--theme-button);
+        color: #ffffff;
+    }
+
+    .card,
+    .service-card,
+    .blog-card,
+    .team-card,
+    .feature-card,
+    .contact-card,
+    .box,
+    .panel {
+        border-radius: var(--theme-card-radius);
+        box-shadow: var(--theme-shadow);
+    }
+
+    .badge,
+    .tag,
+    .label,
+    .pill {
+        background-color: color-mix(in srgb, var(--theme-accent) 14%, transparent);
+        color: var(--theme-accent);
+    }
+
+    .accent,
+    .highlight,
+    .subtitle,
+    .section-subtitle {
+        color: var(--theme-accent);
+    }
+
+    .primary-color {
+        color: var(--theme-primary);
+    }
+
+    .primary-bg {
+        background-color: var(--theme-primary);
+    }
+
+    .secondary-color {
+        color: var(--theme-secondary);
+    }
+
+    .secondary-bg {
+        background-color: var(--theme-secondary);
+    }
+
+    .hero,
+    .main-hero,
+    .page-hero {
+        font-family: var(--theme-font);
+    }
+
+    .hero .btn,
+    .hero .button,
+    .main-hero .btn,
+    .main-hero .button {
+        border-radius: var(--theme-button-radius);
+    }
+
+    input,
+    textarea,
+    select {
+        border-radius: var(--theme-button-radius);
+        font-family: var(--theme-font);
+    }
+
+    input:focus,
+    textarea:focus,
+    select:focus {
+        border-color: var(--theme-primary);
+        outline-color: var(--theme-primary);
+    }
+
+    ::selection {
+        background: var(--theme-primary);
+        color: #ffffff;
+    }
+</style>

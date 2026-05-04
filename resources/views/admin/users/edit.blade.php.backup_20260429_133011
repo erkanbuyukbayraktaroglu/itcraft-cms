@@ -1,0 +1,23 @@
+@extends('admin.layouts.app')
+
+@section('title', 'Admin Kullanıcısı Düzenle')
+@section('topbar_title', 'Admin Kullanıcısı Düzenle')
+
+@section('content')
+<div class="page-title">
+    <h1>Admin Kullanıcısı Düzenle</h1>
+    <p>Kullanıcı bilgilerini, şifresini ve aktif/pasif durumunu buradan güncelleyebilirsin.</p>
+</div>
+
+<form method="post" action="{{ route('admin.users.update', $user->id) }}">
+    @csrf
+    @method('PUT')
+
+    @include('admin.users.form', ['user' => $user])
+
+    <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:18px;">
+        <button type="submit" class="btn">Güncelle</button>
+        <a href="{{ route('admin.users.index') }}" class="btn btn-secondary">Vazgeç</a>
+    </div>
+</form>
+@endsection

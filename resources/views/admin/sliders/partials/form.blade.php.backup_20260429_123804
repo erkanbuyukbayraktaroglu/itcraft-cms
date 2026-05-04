@@ -1,0 +1,81 @@
+<form method="post" action="{{ $action }}">
+    @csrf
+
+    @if($method !== 'POST')
+        @method($method)
+    @endif
+
+    @if($errors->any())
+        <div class="alert-error">
+            Lütfen form alanlarını kontrol edin.
+        </div>
+    @endif
+
+    <div class="card" style="margin-bottom:22px;">
+        <h2 style="margin-top:0;">Slider Bilgileri</h2>
+
+        <label for="title">Başlık</label>
+        <input class="form-control" type="text" id="title" name="title"
+               value="{{ old('title', $slider->title ?? '') }}" required>
+        @error('title') <small class="form-error">{{ $message }}</small> @enderror
+
+        <label for="subtitle">Alt Başlık</label>
+        <input class="form-control" type="text" id="subtitle" name="subtitle"
+               value="{{ old('subtitle', $slider->subtitle ?? '') }}">
+        @error('subtitle') <small class="form-error">{{ $message }}</small> @enderror
+
+        <label for="description">Açıklama</label>
+        <textarea class="form-control" id="description" name="description" rows="4">{{ old('description', $slider->description ?? '') }}</textarea>
+        @error('description') <small class="form-error">{{ $message }}</small> @enderror
+
+        <label for="image">Görsel URL / Path</label>
+        <input class="form-control" type="text" id="image" name="image"
+               value="{{ old('image', $slider->image ?? '') }}"
+               placeholder="uploads/sliders/sava-slider-1.webp">
+
+        <small style="display:block; margin-top:-8px; margin-bottom:14px; color:#6b7280; line-height:1.6;">
+            Önerilen slider görsel ölçüsü: <strong>1920 x 800 px</strong>. 
+            Önerilen format: <strong>.webp</strong> veya <strong>.jpg</strong>. 
+            Örnek path: <code>uploads/sliders/sava-slider-1.webp</code>
+        </small>
+
+        @error('image') <small class="form-error">{{ $message }}</small> @enderror
+
+        <div class="form-grid form-grid-3">
+            <div>
+                <label for="button_text">Buton Yazısı</label>
+                <input class="form-control" type="text" id="button_text" name="button_text"
+                       value="{{ old('button_text', $slider->button_text ?? '') }}"
+                       placeholder="Detaylı Bilgi">
+                @error('button_text') <small class="form-error">{{ $message }}</small> @enderror
+            </div>
+
+            <div>
+                <label for="button_url">Buton Linki</label>
+                <input class="form-control" type="text" id="button_url" name="button_url"
+                       value="{{ old('button_url', $slider->button_url ?? '') }}"
+                       placeholder="/hakkimizda veya https://...">
+                @error('button_url') <small class="form-error">{{ $message }}</small> @enderror
+            </div>
+
+            <div>
+                <label for="sort_order">Sıralama</label>
+                <input class="form-control" type="number" id="sort_order" name="sort_order"
+                       value="{{ old('sort_order', $slider->sort_order ?? 0) }}">
+                @error('sort_order') <small class="form-error">{{ $message }}</small> @enderror
+            </div>
+        </div>
+
+        <div class="checkbox-row">
+            <label>
+                <input type="checkbox" name="is_active" value="1" {{ old('is_active', $slider->is_active ?? true) ? 'checked' : '' }}>
+                Aktif
+            </label>
+        </div>
+    </div>
+
+    <div style="display:flex; gap:12px; flex-wrap:wrap;">
+        <button type="submit" class="btn">{{ $buttonText }}</button>
+        <a href="{{ route('admin.sliders.index') }}" class="btn btn-secondary">Geri Dön</a>
+    </div>
+</form>

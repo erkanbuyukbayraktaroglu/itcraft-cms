@@ -1,0 +1,151 @@
+<?php
+
+namespace App\Http\Controllers\Frontend;
+
+use App\Http\Controllers\Controller;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\View\View;
+
+class ContactController extends Controller
+{
+    public function index(): View
+    {
+        return view('frontend.contact');
+    }
+
+    public function store(Request $request): RedirectResponse
+    {
+        /*
+        |--------------------------------------------------------------------------
+        | Honeypot spam kontrolü
+        |--------------------------------------------------------------------------
+        */
+
+        if ($request->filled('website')) {
+            return redirect()
+                ->route('contact.index')
+                ->with('success', 'Mesajınız başarıyla alınmıştır.');
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Validasyon
+        |--------------------------------------------------------------------------
+        */
+
+        $validated = $request->validate(
+            [
+                'name' => ['required', 'string', 'min:2', 'max:255'],
+                'email' => ['required', 'email', 'max:255'],
+                'phone' => ['nullable', 'string', 'max:255'],
+                'subject' => ['nullable', 'string', 'max:255'],
+                'message' => ['required', 'string', 'min:5', 'max:5000'],
+            ],
+            [
+                'name.required' => 'Ad soyad alanı zorunludur.',
+                'name.min' => 'Ad soyad en az 2 karakter olmalıdır.',
+                'email.required' => 'E-posta alanı zorunludur.',
+                'email.email' => 'Geçerli bir e-posta adresi giriniz.',
+                'message.required' => 'Mesaj alanı zorunludur.',
+                'message.min' => 'Mesaj en az 5 karakter olmalıdır.',
+            ]
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | DB kayıt
+        |--------------------------------------------------------------------------
+        */
+
+        DB::table('contact_messages')->insert([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'phone' => $validated['phone'] ?? null,
+            'subject' => $validated['subject'] ?? 'Web Sitesi İletişim Formu',
+            'message' => $validated['message'],
+            'is_read' => 0,
+            'read_at' => null,
+            'created_at' => date('Y-m-d H:i:s'),
+            'updated_at' => date('Y-m-d H:i:s'),
+        ]);
+
+        /*
+        |--------------------------------------------------------------------------
+        | SMTP mail gönderimi
+        |--------------------------------------------------------------------------
+        | Mail gönderimi başarısız olsa bile form gönderimi başarılı sayılır.
+        |--------------------------------------------------------------------------
+        */
+
+        $this->sendContactNotification($validated, $request);
+
+        return redirect()
+            ->route('contact.index')
+            ->with('success', 'Mesajınız başarıyla gönderildi. En kısa sürede sizinle iletişime geçeceğiz.');
+    }
+
+    private function sendContactNotification(array $data, Request $request): void
+    {
+        try {
+            $mailEnabled = (string) setting('mail_enabled', '0');
+
+            if ($mailEnabled !== '1') {
+                return;
+            }
+
+            $host = trim((string) setting('mail_host', ''));
+            $port = (int) setting('mail_port', 587);
+            $username = trim((string) setting('mail_username', ''));
+            $password = (string) setting('mail_password', '');
+            $encryption = trim((string) setting('mail_encryption', 'tls'));
+            $fromAddress = trim((string) setting('mail_from_address', ''));
+            $fromName = trim((string) setting('mail_from_name', setting('site_name', 'Web Sitesi')));
+            $recipient = trim((string) setting('contact_recipient_email', ''));
+
+            if ($host === '' || $username === '' || $password === '' || $fromAddress === '' || $recipient === '') {
+                Log::warning('Contact mail notification skipped because SMTP settings are incomplete.');
+                return;
+            }
+
+            Config::set('mail.default', 'smtp');
+            Config::set('mail.mailers.smtp.transport', 'smtp');
+            Config::set('mail.mailers.smtp.host', $host);
+            Config::set('mail.mailers.smtp.port', $port);
+            Config::set('mail.mailers.smtp.username', $username);
+            Config::set('mail.mailers.smtp.password', $password);
+            Config::set('mail.mailers.smtp.encryption', $encryption !== '' ? $encryption : null);
+            Config::set('mail.from.address', $fromAddress);
+            Config::set('mail.from.name', $fromName);
+
+            $subject = trim((string) ($data['subject'] ?? ''));
+
+            if ($subject === '') {
+                $subject = 'Yeni İletişim Formu Mesajı';
+            }
+
+            $mailBody = "Yeni bir iletişim formu mesajı alındı.\n\n";
+            $mailBody .= "Ad Soyad: " . ($data['name'] ?? '-') . "\n";
+            $mailBody .= "E-posta: " . ($data['email'] ?? '-') . "\n";
+            $mailBody .= "Telefon: " . (($data['phone'] ?? '') !== '' ? $data['phone'] : '-') . "\n";
+            $mailBody .= "Konu: " . $subject . "\n";
+            $mailBody .= "IP Adresi: " . ($request->ip() ?? '-') . "\n";
+            $mailBody .= "Tarih: " . date('Y-m-d H:i:s') . "\n\n";
+            $mailBody .= "Mesaj:\n";
+            $mailBody .= $data['message'] ?? '-';
+
+            Mail::raw($mailBody, function ($message) use ($recipient, $subject, $data, $fromAddress, $fromName) {
+                $message->to($recipient)
+                    ->from($fromAddress, $fromName)
+                    ->replyTo($data['email'], $data['name'])
+                    ->subject('İletişim Formu: ' . $subject);
+            });
+        } catch (\Throwable $e) {
+            Log::error('Contact mail notification failed: ' . $e->getMessage());
+        }
+    }
+}

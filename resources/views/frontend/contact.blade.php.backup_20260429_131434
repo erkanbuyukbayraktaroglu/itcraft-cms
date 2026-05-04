@@ -1,0 +1,58 @@
+@extends('frontend.layouts.app')
+
+@section('title', seo_title('İletişim'))
+@section('meta_description', 'Bizimle iletişime geçin.')
+
+@section('content')
+<section class="page-hero">
+    <div class="container">
+        <h1>İletişim</h1>
+        <p>Bizimle iletişime geçmek için formu doldurabilir veya aşağıdaki bilgilerden bize ulaşabilirsiniz.</p>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <div class="grid grid-2">
+            <div class="contact-box">
+                <h2>İletişim Bilgileri</h2>
+                <p><strong>E-posta:</strong> {{ setting('email', 'info@example.com') }}</p>
+                <p><strong>Telefon:</strong> {{ setting('phone', '+90 212 000 00 00') }}</p>
+                <p><strong>Adres:</strong> {{ setting('address', 'İstanbul, Türkiye') }}</p>
+
+                @if(setting('google_maps_iframe'))
+                    <div style="margin-top:20px;">
+                        {!! setting('google_maps_iframe') !!}
+                    </div>
+                @endif
+            </div>
+
+            <div class="contact-box">
+                <h2>Mesaj Gönder</h2>
+
+                @if(session('success'))
+                    <div class="alert-success">{{ session('success') }}</div>
+                @endif
+
+                @if($errors->any())
+                    <div class="alert-error">
+                        Lütfen form alanlarını kontrol edin.
+                    </div>
+                @endif
+
+                <form method="post" action="{{ route('contact.store') }}">
+                    @csrf
+
+                    <input class="form-control" type="text" name="name" placeholder="Ad Soyad" value="{{ old('name') }}" required>
+                    <input class="form-control" type="email" name="email" placeholder="E-posta" value="{{ old('email') }}">
+                    <input class="form-control" type="text" name="phone" placeholder="Telefon" value="{{ old('phone') }}">
+                    <input class="form-control" type="text" name="subject" placeholder="Konu" value="{{ old('subject') }}">
+                    <textarea class="form-control" name="message" placeholder="Mesajınız" required>{{ old('message') }}</textarea>
+
+                    <button type="submit" class="btn">Mesajı Gönder</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+@endsection

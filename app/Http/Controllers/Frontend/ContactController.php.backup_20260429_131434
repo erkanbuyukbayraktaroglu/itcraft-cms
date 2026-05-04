@@ -1,0 +1,41 @@
+<?php
+
+namespace App\Http\Controllers\Frontend;
+
+use App\Http\Controllers\Controller;
+use App\Models\ContactMessage;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\View\View;
+
+class ContactController extends Controller
+{
+    public function index(): View
+    {
+        return view('frontend.contact');
+    }
+
+    public function store(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['nullable', 'email', 'max:255'],
+            'phone' => ['nullable', 'string', 'max:100'],
+            'subject' => ['nullable', 'string', 'max:255'],
+            'message' => ['required', 'string', 'min:5'],
+        ]);
+
+        ContactMessage::query()->create([
+            'name' => $validated['name'],
+            'email' => $validated['email'] ?? null,
+            'phone' => $validated['phone'] ?? null,
+            'subject' => $validated['subject'] ?? null,
+            'message' => $validated['message'],
+            'ip_address' => $request->ip(),
+            'user_agent' => substr((string) $request->userAgent(), 0, 500),
+            'is_read' => false,
+        ]);
+
+        return back()->with('success', 'Mesajınız başarıyla iletildi. En kısa sürede sizinle iletişime geçeceğiz.');
+    }
+}

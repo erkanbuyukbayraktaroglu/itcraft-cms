@@ -1,0 +1,78 @@
+<?php
+
+namespace App\Http\Controllers\Frontend;
+
+use App\Http\Controllers\Controller;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\View\View;
+
+class ContactController extends Controller
+{
+    public function index(): View
+    {
+        return view('frontend.contact');
+    }
+
+    public function store(Request $request): RedirectResponse
+    {
+        /*
+        |--------------------------------------------------------------------------
+        | Honeypot spam kontrolü
+        |--------------------------------------------------------------------------
+        */
+
+        if ($request->filled('website')) {
+            return redirect()
+                ->route('contact.index')
+                ->with('success', 'Mesajınız başarıyla alınmıştır.');
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Validasyon
+        |--------------------------------------------------------------------------
+        */
+
+        $validated = $request->validate(
+            [
+                'name' => ['required', 'string', 'min:2', 'max:255'],
+                'email' => ['required', 'email', 'max:255'],
+                'phone' => ['nullable', 'string', 'max:255'],
+                'subject' => ['nullable', 'string', 'max:255'],
+                'message' => ['required', 'string', 'min:5', 'max:5000'],
+            ],
+            [
+                'name.required' => 'Ad soyad alanı zorunludur.',
+                'name.min' => 'Ad soyad en az 2 karakter olmalıdır.',
+                'email.required' => 'E-posta alanı zorunludur.',
+                'email.email' => 'Geçerli bir e-posta adresi giriniz.',
+                'message.required' => 'Mesaj alanı zorunludur.',
+                'message.min' => 'Mesaj en az 5 karakter olmalıdır.',
+            ]
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | DB kayıt
+        |--------------------------------------------------------------------------
+        */
+
+        DB::table('contact_messages')->insert([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'phone' => $validated['phone'] ?? null,
+            'subject' => $validated['subject'] ?? 'Web Sitesi İletişim Formu',
+            'message' => $validated['message'],
+            'is_read' => 0,
+            'read_at' => null,
+            'created_at' => date('Y-m-d H:i:s'),
+            'updated_at' => date('Y-m-d H:i:s'),
+        ]);
+
+        return redirect()
+            ->route('contact.index')
+            ->with('success', 'Mesajınız başarıyla gönderildi. En kısa sürede sizinle iletişime geçeceğiz.');
+    }
+}

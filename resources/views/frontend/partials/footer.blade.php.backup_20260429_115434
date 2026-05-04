@@ -1,0 +1,30 @@
+<footer class="site-footer">
+    <div class="container">
+        <div class="footer-grid">
+            <div>
+                <div class="footer-title">{{ setting('site_name', 'Corporate CMS') }}</div>
+                <p>{{ setting('site_description', 'SEO uyumlu ve yönetilebilir kurumsal web altyapısı.') }}</p>
+                <p>
+                    <strong>E-posta:</strong> {{ setting('email', 'info@example.com') }}<br>
+                    <strong>Telefon:</strong> {{ setting('phone', '+90 212 000 00 00') }}<br>
+                    <strong>Adres:</strong> {{ setting('address', 'İstanbul, Türkiye') }}
+                </p>
+            </div>
+
+            <div>
+                <div class="footer-title">Hızlı Menü</div>
+                <div class="footer-links">
+                    <a href="{{ route('home') }}">Anasayfa</a>
+                    <a href="{{ url('/hakkimizda') }}">Hakkımızda</a>
+                    <a href="{{ route('services.index') }}">Hizmetler</a>
+                    <a href="{{ route('blog.index') }}">Blog</a>
+                    <a href="{{ route('contact.index') }}">İletişim</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            © {{ date('Y') }} {{ setting('site_name', 'Corporate CMS') }}. Tüm hakları saklıdır.
+        </div>
+    </div>
+</footer>

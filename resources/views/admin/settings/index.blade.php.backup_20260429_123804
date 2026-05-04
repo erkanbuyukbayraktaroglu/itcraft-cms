@@ -1,0 +1,112 @@
+@extends('admin.layouts.app')
+
+@section('title', 'Site Ayarları')
+@section('topbar_title', 'Site Ayarları')
+
+@section('content')
+<div class="page-title">
+    <h1>Site Ayarları</h1>
+    <p>Site kimliği, iletişim bilgileri, renkler, SEO ve sosyal medya ayarlarını buradan yönetebilirsin.</p>
+</div>
+
+<form method="post" action="{{ route('admin.settings.update') }}">
+    @csrf
+
+    @foreach($groups as $groupKey => $group)
+        <div class="card" style="margin-bottom:22px;">
+            <h2 style="margin-top:0; margin-bottom:6px;">{{ $group['title'] }}</h2>
+            <p style="margin-top:0; color:#6b7280;">{{ $group['description'] }}</p>
+
+            @if($groupKey === 'colors')
+                <div class="form-grid form-grid-2">
+                    @foreach($group['items'] as $key => $item)
+                        @php
+                            $value = old($key, $settings[$key] ?? $item['placeholder']);
+                        @endphp
+
+                        <div>
+                            <label for="{{ $key }}">{{ $item['label'] }}</label>
+
+                            <div style="display:flex; gap:10px; align-items:center;">
+                                <input type="color"
+                                       id="{{ $key }}_picker"
+                                       value="{{ $value ?: '#000000' }}"
+                                       style="width:56px; height:44px; border:1px solid #d1d5db; border-radius:10px; padding:4px; background:#fff;"
+                                       oninput="document.getElementById('{{ $key }}').value = this.value">
+
+                                <input class="form-control"
+                                       style="margin-bottom:0;"
+                                       type="text"
+                                       id="{{ $key }}"
+                                       name="{{ $key }}"
+                                       value="{{ $value }}"
+                                       placeholder="{{ $item['placeholder'] }}"
+                                       oninput="document.getElementById('{{ $key }}_picker').value = this.value">
+                            </div>
+
+                            <small style="display:block; margin-top:7px; margin-bottom:14px; color:#6b7280;">
+                                Örnek: <code>{{ $item['placeholder'] }}</code>
+                            </small>
+                        </div>
+                    @endforeach
+                </div>
+
+                <div style="margin-top:14px; padding:16px; border-radius:14px; background:#f9fafb; border:1px solid #e5e7eb;">
+                    <strong>Renk önerisi:</strong>
+                    <p style="margin-bottom:0; color:#6b7280; line-height:1.6;">
+                        Hukuk / danışmanlık siteleri için koyu lacivert, beyaz ve altın tonları daha kurumsal görünür.
+                        Örnek palet: Ana renk <code>#0f172a</code>, vurgu rengi <code>#c9a227</code>, footer <code>#0f172a</code>.
+                    </p>
+                </div>
+            @else
+                @foreach($group['items'] as $key => $item)
+                    @php
+                        $value = old($key, $settings[$key] ?? '');
+                    @endphp
+
+                    <label for="{{ $key }}">{{ $item['label'] }}</label>
+
+                    @if($item['type'] === 'textarea')
+                        <textarea class="form-control"
+                                  id="{{ $key }}"
+                                  name="{{ $key }}"
+                                  rows="4"
+                                  placeholder="{{ $item['placeholder'] }}">{{ $value }}</textarea>
+                    @else
+                        <input class="form-control"
+                               type="{{ $item['type'] }}"
+                               id="{{ $key }}"
+                               name="{{ $key }}"
+                               value="{{ $value }}"
+                               placeholder="{{ $item['placeholder'] }}">
+                    @endif
+
+                    @if(in_array($key, ['header_logo', 'footer_logo', 'logo', 'favicon', 'default_og_image'], true))
+                        <small style="display:block; margin-top:-8px; margin-bottom:14px; color:#6b7280; line-height:1.6;">
+                            Örnek path: <code>{{ $item['placeholder'] }}</code>.
+                            Dosyayı <code>public/uploads/</code> altına yükleyip bu alanı doldurabilirsin.
+                        </small>
+
+                        @if($key === 'header_logo')
+                            <small style="display:block; margin-top:-8px; margin-bottom:14px; color:#374151; line-height:1.6;">
+                                Header zemini genelde açık olduğu için burada <strong>koyu renk / siyah / lacivert logo</strong> kullan.
+                            </small>
+                        @endif
+
+                        @if($key === 'footer_logo')
+                            <small style="display:block; margin-top:-8px; margin-bottom:14px; color:#374151; line-height:1.6;">
+                                Footer zemini genelde koyu olduğu için burada <strong>beyaz logo</strong> kullan.
+                            </small>
+                        @endif
+                    @endif
+                @endforeach
+            @endif
+        </div>
+    @endforeach
+
+    <div style="display:flex; gap:12px; flex-wrap:wrap;">
+        <button type="submit" class="btn">Ayarları Kaydet</button>
+        <a href="{{ route('home') }}" target="_blank" class="btn btn-secondary">Siteyi Görüntüle</a>
+    </div>
+</form>
+@endsection

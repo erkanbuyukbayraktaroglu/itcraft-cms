@@ -1,0 +1,82 @@
+@extends('admin.layouts.app')
+
+@section('title', 'İletişim Mesajları')
+@section('topbar_title', 'İletişim Mesajları')
+
+@section('content')
+<div class="page-title">
+    <h1>İletişim Mesajları</h1>
+    <p>Web sitesindeki iletişim formundan gelen mesajları buradan takip edebilirsin.</p>
+</div>
+
+<div class="card">
+    @if(isset($messages) && $messages->count())
+        <div class="table-wrap">
+            <table>
+                <thead>
+                <tr>
+                    <th>Durum</th>
+                    <th>Ad Soyad</th>
+                    <th>E-posta</th>
+                    <th>Konu</th>
+                    <th>Tarih</th>
+                    <th>İşlem</th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach($messages as $message)
+                    <tr>
+                        <td>
+                            @if((int) ($message->is_read ?? 0) === 1)
+                                <span class="badge">Okundu</span>
+                            @else
+                                <span class="badge badge-success">Yeni</span>
+                            @endif
+                        </td>
+
+                        <td><strong>{{ $message->name ?? '-' }}</strong></td>
+
+                        <td>
+                            @if(!empty($message->email))
+                                <a href="mailto:{{ $message->email }}">{{ $message->email }}</a>
+                            @else
+                                -
+                            @endif
+                        </td>
+
+                        <td>{{ $message->subject ?? 'Konu belirtilmemiş' }}</td>
+                        <td>{{ $message->created_at ?? '-' }}</td>
+
+                        <td>
+                            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                                <a href="{{ route('admin.contact-messages.show', $message->id) }}" class="btn">Görüntüle</a>
+
+                                @if((int) ($message->is_read ?? 0) === 1)
+                                    <form method="post" action="{{ route('admin.contact-messages.unread', $message->id) }}">
+                                        @csrf
+                                        <button type="submit" class="btn btn-secondary">Okunmadı Yap</button>
+                                    </form>
+                                @else
+                                    <form method="post" action="{{ route('admin.contact-messages.read', $message->id) }}">
+                                        @csrf
+                                        <button type="submit" class="btn btn-secondary">Okundu Yap</button>
+                                    </form>
+                                @endif
+
+                                <form method="post" action="{{ route('admin.contact-messages.destroy', $message->id) }}" onsubmit="return confirm('Bu mesajı silmek istediğine emin misin?');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-danger">Sil</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                @endforeach
+                </tbody>
+            </table>
+        </div>
+    @else
+        <p style="color:#6b7280;">Henüz iletişim mesajı bulunmuyor.</p>
+    @endif
+</div>
+@endsection

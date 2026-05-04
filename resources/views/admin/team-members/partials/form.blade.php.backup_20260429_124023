@@ -1,0 +1,160 @@
+<form method="post" action="{{ $action }}">
+    @csrf
+
+    @if($method !== 'POST')
+        @method($method)
+    @endif
+
+    @if($errors->any())
+        <div class="alert-error">
+            Lütfen form alanlarını kontrol edin.
+        </div>
+    @endif
+
+    <div class="card" style="margin-bottom:22px;">
+        <h2 style="margin-top:0;">Profil Bilgileri</h2>
+
+        <div class="form-grid form-grid-2">
+            <div>
+                <label for="name">Ad Soyad</label>
+                <input class="form-control" type="text" id="name" name="name"
+                       value="{{ old('name', $teamMember->name ?? '') }}" required>
+                @error('name') <small class="form-error">{{ $message }}</small> @enderror
+            </div>
+
+            <div>
+                <label for="slug">Slug</label>
+                <input class="form-control" type="text" id="slug" name="slug"
+                       value="{{ old('slug', $teamMember->slug ?? '') }}"
+                       placeholder="Boş bırakırsan addan otomatik oluşur">
+                @error('slug') <small class="form-error">{{ $message }}</small> @enderror
+            </div>
+        </div>
+
+        <label for="title">Ünvan</label>
+        <input class="form-control" type="text" id="title" name="title"
+               value="{{ old('title', $teamMember->title ?? '') }}"
+               placeholder="Avukat, Danışman, Kurucu vb.">
+        @error('title') <small class="form-error">{{ $message }}</small> @enderror
+
+        <label for="summary">Kısa Açıklama</label>
+        <textarea class="form-control" id="summary" name="summary" rows="3">{{ old('summary', $teamMember->summary ?? '') }}</textarea>
+        @error('summary') <small class="form-error">{{ $message }}</small> @enderror
+
+        <label for="bio">Biyografi</label>
+        <textarea class="form-control editor-area" id="bio" name="bio" rows="12">{{ old('bio', $teamMember->bio ?? '') }}</textarea>
+        @error('bio') <small class="form-error">{{ $message }}</small> @enderror
+
+        <div class="form-grid form-grid-3">
+            <div>
+                <label for="email">E-posta</label>
+                <input class="form-control" type="email" id="email" name="email"
+                       value="{{ old('email', $teamMember->email ?? '') }}">
+                @error('email') <small class="form-error">{{ $message }}</small> @enderror
+            </div>
+
+            <div>
+                <label for="phone">Telefon</label>
+                <input class="form-control" type="text" id="phone" name="phone"
+                       value="{{ old('phone', $teamMember->phone ?? '') }}">
+                @error('phone') <small class="form-error">{{ $message }}</small> @enderror
+            </div>
+
+            <div>
+                <label for="sort_order">Sıralama</label>
+                <input class="form-control" type="number" id="sort_order" name="sort_order"
+                       value="{{ old('sort_order', $teamMember->sort_order ?? 0) }}">
+                @error('sort_order') <small class="form-error">{{ $message }}</small> @enderror
+            </div>
+        </div>
+
+        <label for="linkedin_url">LinkedIn URL</label>
+        <input class="form-control" type="text" id="linkedin_url" name="linkedin_url"
+               value="{{ old('linkedin_url', $teamMember->linkedin_url ?? '') }}"
+               placeholder="https://www.linkedin.com/in/...">
+        @error('linkedin_url') <small class="form-error">{{ $message }}</small> @enderror
+
+        <label for="image">Profil Görseli URL / Path</label>
+        <input class="form-control" type="text" id="image" name="image"
+               value="{{ old('image', $teamMember->
+        <small class="media-path-helper" style="display:block; margin-top:-8px; margin-bottom:14px; color:#6b7280; line-height:1.6;">
+            Görsel yüklemek için <a href="{{ route('admin.media.index') }}" target="_blank" style="font-weight:700; color:#0f172a;">Medya Yönetimi</a> sayfasını kullan.
+            Yükledikten sonra oluşan path’i bu alana yapıştır.
+            Örnek: <code>uploads/media/ornek-gorsel.webp</code>
+        </small>image ?? '') }}"
+               placeholder="uploads/team/ornek.jpg veya tam URL">
+        @error('image') <small class="form-error">{{ $message }}</small> @enderror
+
+        <div class="checkbox-row">
+            <label>
+                <input type="checkbox" name="is_active" value="1" {{ old('is_active', $teamMember->is_active ?? true) ? 'checked' : '' }}>
+                Aktif
+            </label>
+        </div>
+    </div>
+
+    <div class="card" style="margin-bottom:22px;">
+        <h2 style="margin-top:0;">SEO Ayarları</h2>
+
+        <label for="meta_title">Meta Başlık</label>
+        <input class="form-control" type="text" id="meta_title" name="meta_title"
+               value="{{ old('meta_title', $teamMember->meta_title ?? '') }}">
+
+        <label for="meta_description">Meta Açıklama</label>
+        <textarea class="form-control" id="meta_description" name="meta_description" rows="3">{{ old('meta_description', $teamMember->meta_description ?? '') }}</textarea>
+
+        <label for="meta_keywords">Meta Anahtar Kelimeler</label>
+        <input class="form-control" type="text" id="meta_keywords" name="meta_keywords"
+               value="{{ old('meta_keywords', $teamMember->meta_keywords ?? '') }}"
+               placeholder="kelime1, kelime2, kelime3">
+
+        <label for="canonical_url">Canonical URL</label>
+        <input class="form-control" type="text" id="canonical_url" name="canonical_url"
+               value="{{ old('canonical_url', $teamMember->canonical_url ?? '') }}">
+
+        <div class="form-grid form-grid-2">
+            <div>
+                <label for="robots_index">Robots Index</label>
+                @php $robotsIndex = old('robots_index', $teamMember->robots_index ?? 'index'); @endphp
+                <select class="form-control" id="robots_index" name="robots_index">
+                    <option value="index" {{ $robotsIndex === 'index' ? 'selected' : '' }}>index</option>
+                    <option value="noindex" {{ $robotsIndex === 'noindex' ? 'selected' : '' }}>noindex</option>
+                </select>
+            </div>
+
+            <div>
+                <label for="robots_follow">Robots Follow</label>
+                @php $robotsFollow = old('robots_follow', $teamMember->robots_follow ?? 'follow'); @endphp
+                <select class="form-control" id="robots_follow" name="robots_follow">
+                    <option value="follow" {{ $robotsFollow === 'follow' ? 'selected' : '' }}>follow</option>
+                    <option value="nofollow" {{ $robotsFollow === 'nofollow' ? 'selected' : '' }}>nofollow</option>
+                </select>
+            </div>
+        </div>
+
+        <label for="og_title">Open Graph Başlık</label>
+        <input class="form-control" type="text" id="og_title" name="og_title"
+               value="{{ old('og_title', $teamMember->og_title ?? '') }}">
+
+        <label for="og_description">Open Graph Açıklama</label>
+        <textarea class="form-control" id="og_description" name="og_description" rows="3">{{ old('og_description', $teamMember->og_description ?? '') }}</textarea>
+
+        <label for="og_image">Open Graph Görsel</label>
+        <input class="form-control" type="text" id="og_image" name="og_image"
+               value="{{ old('og_image', $teamMember->og_image ?? '') }}"
+               placeholder="uploads/og/ornek.jpg veya tam URL">
+
+        <label for="schema_type">Schema Type</label>
+        <select class="form-control" id="schema_type" name="schema_type">
+            @php $schemaValue = old('schema_type', $teamMember->schema_type ?? 'Person'); @endphp
+            @foreach(['Person', 'ProfilePage', 'WebPage', 'Organization', 'ProfessionalService'] as $schema)
+                <option value="{{ $schema }}" {{ $schemaValue === $schema ? 'selected' : '' }}>{{ $schema }}</option>
+            @endforeach
+        </select>
+    </div>
+
+    <div style="display:flex; gap:12px; flex-wrap:wrap;">
+        <button type="submit" class="btn">{{ $buttonText }}</button>
+        <a href="{{ route('admin.team-members.index') }}" class="btn btn-secondary">Geri Dön</a>
+    </div>
+</form>

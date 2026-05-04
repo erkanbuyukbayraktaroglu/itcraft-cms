@@ -1,0 +1,339 @@
+@extends('frontend.layouts.app')
+
+@section('title', seo_title(setting('site_slogan', 'Kurumsal Web Altyapısı')))
+@section('meta_description', setting('site_description', 'SEO uyumlu, hızlı ve yönetilebilir kurumsal web sitesi altyapısı.'))
+
+@push('head')
+<style>
+    .hero-carousel {
+        position: relative;
+        overflow: hidden;
+    }
+
+    .hero-slide {
+        display: none;
+        animation: heroFade .45s ease-in-out;
+    }
+
+    .hero-slide.active {
+        display: block;
+    }
+
+    @keyframes heroFade {
+        from {
+            opacity: 0;
+            transform: translateY(8px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .hero-carousel-controls {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 24px;
+        flex-wrap: wrap;
+    }
+
+    .hero-arrow {
+        width: 42px;
+        height: 42px;
+        border: 1px solid rgba(255,255,255,.25);
+        border-radius: 999px;
+        background: rgba(255,255,255,.08);
+        color: #fff;
+        cursor: pointer;
+        font-size: 20px;
+        font-weight: 800;
+        line-height: 1;
+    }
+
+    .hero-arrow:hover {
+        background: rgba(255,255,255,.18);
+    }
+
+    .hero-dots {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .hero-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 999px;
+        border: 0;
+        background: rgba(255,255,255,.35);
+        cursor: pointer;
+        padding: 0;
+    }
+
+    .hero-dot.active {
+        background: var(--color-accent);
+        width: 26px;
+    }
+
+    .hero-mini-list {
+        display: grid;
+        gap: 12px;
+        margin-top: 20px;
+    }
+
+    .hero-mini-item {
+        border-top: 1px solid rgba(255,255,255,.16);
+        padding-top: 12px;
+        opacity: .78;
+        transition: .2s ease;
+        cursor: pointer;
+    }
+
+    .hero-mini-item.active,
+    .hero-mini-item:hover {
+        opacity: 1;
+    }
+
+    .hero-mini-item strong {
+        font-size: 15px;
+    }
+
+    .hero-mini-item p {
+        margin: 4px 0 0;
+        font-size: 14px;
+    }
+</style>
+@endpush
+
+@section('content')
+<section class="hero">
+    <div class="container hero-grid">
+        <div class="hero-carousel" id="heroCarousel">
+            @if($sliders->count())
+                @foreach($sliders as $index => $slider)
+                    <div class="hero-slide {{ $index === 0 ? 'active' : '' }}" data-slide="{{ $index }}">
+                        <h1>{{ $slider->title }}</h1>
+
+                        @if($slider->subtitle)
+                            <p style="font-size:20px; color:rgba(255,255,255,.9); font-weight:700;">
+                                {{ $slider->subtitle }}
+                            </p>
+                        @endif
+
+                        @if($slider->description)
+                            <p>{{ $slider->description }}</p>
+                        @endif
+
+                        @if($slider->button_text && $slider->button_url)
+                            <a href="{{ $slider->button_url }}" class="btn btn-accent">
+                                {{ $slider->button_text }}
+                            </a>
+                        @endif
+                    </div>
+                @endforeach
+
+                @if($sliders->count() > 1)
+                    <div class="hero-carousel-controls">
+                        <button type="button" class="hero-arrow" id="heroPrev" aria-label="Önceki slider">‹</button>
+
+                        <div class="hero-dots" id="heroDots">
+                            @foreach($sliders as $index => $slider)
+                                <button type="button"
+                                        class="hero-dot {{ $index === 0 ? 'active' : '' }}"
+                                        data-slide-target="{{ $index }}"
+                                        aria-label="Slider {{ $index + 1 }}">
+                                </button>
+                            @endforeach
+                        </div>
+
+                        <button type="button" class="hero-arrow" id="heroNext" aria-label="Sonraki slider">›</button>
+                    </div>
+                @endif
+            @else
+                <div class="hero-slide active">
+                    <h1>{{ setting('site_slogan', 'Laravel tabanlı kurumsal web altyapısı') }}</h1>
+                    <p>{{ setting('site_description', 'Sınırsız sayfa destekli, SEO uyumlu, dinamik renk yönetimli kurumsal web sitesi altyapısı.') }}</p>
+                    <a href="{{ route('services.index') }}" class="btn btn-accent">Hizmetleri İncele</a>
+                </div>
+            @endif
+        </div>
+
+        <div class="hero-card">
+            <strong>Dinamik CMS Altyapısı</strong>
+            <p>Sayfalar, hizmetler, blog içerikleri, ekip üyeleri ve SEO alanları yönetilebilir yapıdadır.</p>
+
+            @if($sliders->count() > 1)
+                <div class="hero-mini-list" id="heroMiniList">
+                    @foreach($sliders->take(4) as $index => $slider)
+                        <div class="hero-mini-item {{ $index === 0 ? 'active' : '' }}" data-slide-target="{{ $index }}">
+                            <strong>{{ $slider->title }}</strong>
+                            @if($slider->subtitle)
+                                <p>{{ $slider->subtitle }}</p>
+                            @endif
+                        </div>
+                    @endforeach
+                </div>
+            @endif
+        </div>
+    </div>
+</section>
+
+@if($featuredServices->count())
+<section class="section">
+    <div class="container">
+        <div class="section-title">
+            <h2>Hizmetler</h2>
+            <p>Kurumsal yapınıza uygun, yönetilebilir ve geliştirilebilir hizmet modülleri.</p>
+        </div>
+
+        <div class="grid grid-3">
+            @foreach($featuredServices as $service)
+                <article class="card">
+                    <h3>{{ $service->title }}</h3>
+                    <p>{{ $service->summary }}</p>
+                    <a href="{{ route('services.show', $service->slug) }}" class="btn">Detay</a>
+                </article>
+            @endforeach
+        </div>
+    </div>
+</section>
+@endif
+
+@if($aboutPage)
+<section class="section section-muted">
+    <div class="container">
+        <div class="section-title">
+            <h2>{{ $aboutPage->title }}</h2>
+            <p>{{ $aboutPage->summary }}</p>
+        </div>
+
+        <div class="content">
+            {!! $aboutPage->content !!}
+        </div>
+
+        <br>
+        <a href="{{ url('/hakkimizda') }}" class="btn">Devamını Oku</a>
+    </div>
+</section>
+@endif
+
+@if($latestPosts->count())
+<section class="section">
+    <div class="container">
+        <div class="section-title">
+            <h2>Blog</h2>
+            <p>Güncel içerikler, duyurular ve bilgilendirici yazılar.</p>
+        </div>
+
+        <div class="grid grid-3">
+            @foreach($latestPosts as $post)
+                <article class="card">
+                    <h3>{{ $post->title }}</h3>
+                    <p>{{ $post->summary }}</p>
+                    <a href="{{ route('blog.show', $post->slug) }}" class="btn">Oku</a>
+                </article>
+            @endforeach
+        </div>
+    </div>
+</section>
+@endif
+@endsection
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const carousel = document.getElementById('heroCarousel');
+
+        if (!carousel) {
+            return;
+        }
+
+        const slides = carousel.querySelectorAll('.hero-slide');
+        const dots = document.querySelectorAll('[data-slide-target]');
+        const prevButton = document.getElementById('heroPrev');
+        const nextButton = document.getElementById('heroNext');
+
+        if (slides.length <= 1) {
+            return;
+        }
+
+        let currentIndex = 0;
+        let timer = null;
+        const intervalMs = 5000;
+
+        function showSlide(index) {
+            if (index < 0) {
+                index = slides.length - 1;
+            }
+
+            if (index >= slides.length) {
+                index = 0;
+            }
+
+            slides.forEach(function (slide) {
+                slide.classList.remove('active');
+            });
+
+            dots.forEach(function (dot) {
+                dot.classList.remove('active');
+            });
+
+            slides[index].classList.add('active');
+
+            document.querySelectorAll('[data-slide-target="' + index + '"]').forEach(function (item) {
+                item.classList.add('active');
+            });
+
+            currentIndex = index;
+        }
+
+        function nextSlide() {
+            showSlide(currentIndex + 1);
+        }
+
+        function prevSlide() {
+            showSlide(currentIndex - 1);
+        }
+
+        function startTimer() {
+            stopTimer();
+            timer = setInterval(nextSlide, intervalMs);
+        }
+
+        function stopTimer() {
+            if (timer) {
+                clearInterval(timer);
+            }
+        }
+
+        if (nextButton) {
+            nextButton.addEventListener('click', function () {
+                nextSlide();
+                startTimer();
+            });
+        }
+
+        if (prevButton) {
+            prevButton.addEventListener('click', function () {
+                prevSlide();
+                startTimer();
+            });
+        }
+
+        dots.forEach(function (dot) {
+            dot.addEventListener('click', function () {
+                const target = parseInt(dot.getAttribute('data-slide-target'), 10);
+                showSlide(target);
+                startTimer();
+            });
+        });
+
+        carousel.addEventListener('mouseenter', stopTimer);
+        carousel.addEventListener('mouseleave', startTimer);
+
+        startTimer();
+    });
+</script>
+@endpush

@@ -1,0 +1,286 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\View\View;
+
+class ThemeSettingsController extends Controller
+{
+    private string $table = 'site_settings';
+
+    public function edit(): View
+    {
+        abort_if(!Schema::hasTable($this->table), 500, 'site_settings tablosu bulunamadı.');
+
+        $settings = DB::table($this->table)->orderBy('id')->first();
+
+        if (!$settings) {
+            $data = $this->defaultValues();
+
+            if (Schema::hasColumn($this->table, 'created_at')) {
+                $data['created_at'] = now();
+            }
+
+            if (Schema::hasColumn($this->table, 'updated_at')) {
+                $data['updated_at'] = now();
+            }
+
+            DB::table($this->table)->insert($data);
+
+            $settings = DB::table($this->table)->orderBy('id')->first();
+        }
+
+        return view('admin.theme-settings.edit', [
+            'settings' => $settings,
+            'fonts' => $this->fontOptions(),
+            'shadowLevels' => $this->shadowLevels(),
+        ]);
+    }
+
+    public function update(Request $request): RedirectResponse
+    {
+        abort_if(!Schema::hasTable($this->table), 500, 'site_settings tablosu bulunamadı.');
+
+        $validated = $request->validate([
+            'theme_primary_color' => ['nullable', 'string', 'max:20'],
+            'theme_secondary_color' => ['nullable', 'string', 'max:20'],
+            'theme_accent_color' => ['nullable', 'string', 'max:20'],
+            'theme_button_color' => ['nullable', 'string', 'max:20'],
+            'theme_button_hover_color' => ['nullable', 'string', 'max:20'],
+            'theme_header_bg' => ['nullable', 'string', 'max:20'],
+            'theme_footer_bg' => ['nullable', 'string', 'max:20'],
+            'theme_body_bg' => ['nullable', 'string', 'max:20'],
+            'theme_heading_color' => ['nullable', 'string', 'max:20'],
+            'theme_text_color' => ['nullable', 'string', 'max:20'],
+            'theme_link_color' => ['nullable', 'string', 'max:20'],
+            'theme_font_family' => ['nullable', 'string', 'max:100'],
+            'theme_button_radius' => ['nullable', 'string', 'max:20'],
+            'theme_card_radius' => ['nullable', 'string', 'max:20'],
+            'theme_container_width' => ['nullable', 'string', 'max:20'],
+            'theme_shadow_level' => ['nullable', 'string', 'max:30'],
+            'theme_slider_badge_bg' => ['nullable', 'string', 'max:20'],
+            'theme_slider_badge_text' => ['nullable', 'string', 'max:20'],
+            'theme_slider_badge_dot' => ['nullable', 'string', 'max:20'],
+            'theme_slider_dot_active' => ['nullable', 'string', 'max:20'],
+            'theme_slider_dot_passive' => ['nullable', 'string', 'max:20'],
+            'theme_slider_accent_color' => ['nullable', 'string', 'max:20'],
+            'theme_footer_heading_color' => ['nullable', 'string', 'max:20'],
+            'theme_footer_text_color' => ['nullable', 'string', 'max:20'],
+            'theme_footer_link_color' => ['nullable', 'string', 'max:20'],
+            'theme_footer_link_hover_color' => ['nullable', 'string', 'max:20'],
+            'theme_footer_border_color' => ['nullable', 'string', 'max:20'],
+            'theme_footer_social_color' => ['nullable', 'string', 'max:20'],
+        ], [], [
+            'theme_primary_color' => 'Ana renk',
+            'theme_secondary_color' => 'İkincil renk',
+            'theme_accent_color' => 'Vurgu rengi',
+            'theme_button_color' => 'Buton rengi',
+            'theme_button_hover_color' => 'Buton hover rengi',
+            'theme_header_bg' => 'Header arka plan',
+            'theme_footer_bg' => 'Footer arka plan',
+            'theme_body_bg' => 'Body arka plan',
+            'theme_heading_color' => 'Başlık rengi',
+            'theme_text_color' => 'Yazı rengi',
+            'theme_link_color' => 'Link rengi',
+            'theme_font_family' => 'Font ailesi',
+            'theme_button_radius' => 'Buton radius',
+            'theme_card_radius' => 'Kart radius',
+            'theme_container_width' => 'Container genişliği',
+            'theme_shadow_level' => 'Gölge seviyesi',
+            'theme_slider_badge_bg' => 'Slider badge arka plan',
+            'theme_slider_badge_text' => 'Slider badge yazı rengi',
+            'theme_slider_badge_dot' => 'Slider badge nokta rengi',
+            'theme_slider_dot_active' => 'Slider aktif nokta rengi',
+            'theme_slider_dot_passive' => 'Slider pasif nokta rengi',
+            'theme_slider_accent_color' => 'Slider vurgu rengi',
+            'theme_footer_heading_color' => 'Footer başlık rengi',
+            'theme_footer_text_color' => 'Footer yazı rengi',
+            'theme_footer_link_color' => 'Footer link rengi',
+            'theme_footer_link_hover_color' => 'Footer link hover rengi',
+            'theme_footer_border_color' => 'Footer çizgi rengi',
+            'theme_footer_social_color' => 'Footer sosyal ikon rengi',
+        ]);
+
+        $data = [];
+
+        foreach ($this->themeColumns() as $column) {
+            if (Schema::hasColumn($this->table, $column)) {
+                $value = $validated[$column] ?? null;
+
+                if ($value === null || $value === '') {
+                    $value = $this->defaultValues()[$column] ?? null;
+                }
+
+                $data[$column] = $value;
+            }
+        }
+
+        if (Schema::hasColumn($this->table, 'updated_at')) {
+            $data['updated_at'] = now();
+        }
+
+        $row = DB::table($this->table)->orderBy('id')->first();
+
+        if ($row) {
+            DB::table($this->table)->where('id', $row->id)->update($data);
+        } else {
+            if (Schema::hasColumn($this->table, 'created_at')) {
+                $data['created_at'] = now();
+            }
+
+            DB::table($this->table)->insert($data);
+        }
+
+        $this->clearViewCache();
+
+        return redirect()
+            ->route('admin.theme-settings.edit')
+            ->with('success', 'Tema ayarları güncellendi.');
+    }
+
+    public function reset(): RedirectResponse
+    {
+        abort_if(!Schema::hasTable($this->table), 500, 'site_settings tablosu bulunamadı.');
+
+        $data = [];
+
+        foreach ($this->themeColumns() as $column) {
+            if (Schema::hasColumn($this->table, $column)) {
+                $data[$column] = $this->defaultValues()[$column] ?? null;
+            }
+        }
+
+        if (Schema::hasColumn($this->table, 'updated_at')) {
+            $data['updated_at'] = now();
+        }
+
+        $row = DB::table($this->table)->orderBy('id')->first();
+
+        if ($row) {
+            DB::table($this->table)->where('id', $row->id)->update($data);
+        }
+
+        $this->clearViewCache();
+
+        return redirect()
+            ->route('admin.theme-settings.edit')
+            ->with('success', 'Tema ayarları varsayılan değerlere döndürüldü.');
+    }
+
+    private function themeColumns(): array
+    {
+        return [
+            'theme_primary_color',
+            'theme_secondary_color',
+            'theme_accent_color',
+            'theme_button_color',
+            'theme_button_hover_color',
+            'theme_header_bg',
+            'theme_footer_bg',
+            'theme_body_bg',
+            'theme_heading_color',
+            'theme_text_color',
+            'theme_link_color',
+            'theme_font_family',
+            'theme_button_radius',
+            'theme_card_radius',
+            'theme_container_width',
+            'theme_shadow_level',
+            'theme_slider_badge_bg',
+            'theme_slider_badge_text',
+            'theme_slider_badge_dot',
+            'theme_slider_dot_active',
+            'theme_slider_dot_passive',
+            'theme_slider_accent_color',
+            'theme_footer_heading_color',
+            'theme_footer_text_color',
+            'theme_footer_link_color',
+            'theme_footer_link_hover_color',
+            'theme_footer_border_color',
+            'theme_footer_social_color',
+        ];
+    }
+
+    private function defaultValues(): array
+    {
+        return [
+            'theme_primary_color' => '#1d4ed8',
+            'theme_secondary_color' => '#f59e0b',
+            'theme_accent_color' => '#0ea5e9',
+            'theme_button_color' => '#1d4ed8',
+            'theme_button_hover_color' => '#1e40af',
+            'theme_header_bg' => '#ffffff',
+            'theme_footer_bg' => '#111827',
+            'theme_body_bg' => '#ffffff',
+            'theme_heading_color' => '#111827',
+            'theme_text_color' => '#374151',
+            'theme_link_color' => '#1d4ed8',
+            'theme_font_family' => 'Inter, Arial, sans-serif',
+            'theme_button_radius' => '12px',
+            'theme_card_radius' => '18px',
+            'theme_container_width' => '1200px',
+            'theme_shadow_level' => 'medium',
+            'theme_slider_badge_bg' => '#1e293b',
+            'theme_slider_badge_text' => '#ffffff',
+            'theme_slider_badge_dot' => '#0ea5e9',
+            'theme_slider_dot_active' => '#0ea5e9',
+            'theme_slider_dot_passive' => '#94a3b8',
+            'theme_slider_accent_color' => '#0ea5e9',
+            'theme_footer_heading_color' => '#ffffff',
+            'theme_footer_text_color' => '#d1d5db',
+            'theme_footer_link_color' => '#e5e7eb',
+            'theme_footer_link_hover_color' => '#ffffff',
+            'theme_footer_border_color' => '#374151',
+            'theme_footer_social_color' => '#ffffff',
+        ];
+    }
+
+    private function fontOptions(): array
+    {
+        return [
+            'Inter, Arial, sans-serif' => 'Inter / Modern',
+            'Arial, Helvetica, sans-serif' => 'Arial',
+            'Montserrat, Arial, sans-serif' => 'Montserrat',
+            'Poppins, Arial, sans-serif' => 'Poppins',
+            'Roboto, Arial, sans-serif' => 'Roboto',
+            'Georgia, serif' => 'Georgia / Serif',
+            'Times New Roman, serif' => 'Times New Roman',
+        ];
+    }
+
+    private function shadowLevels(): array
+    {
+        return [
+            'none' => 'Yok',
+            'soft' => 'Yumuşak',
+            'medium' => 'Orta',
+            'strong' => 'Belirgin',
+        ];
+    }
+
+    private function clearViewCache(): void
+    {
+        $viewPath = storage_path('framework/views');
+
+        if (!is_dir($viewPath)) {
+            return;
+        }
+
+        $files = glob($viewPath . '/*.php');
+
+        if (!$files) {
+            return;
+        }
+
+        foreach ($files as $file) {
+            if (is_file($file)) {
+                @unlink($file);
+            }
+        }
+    }
+}

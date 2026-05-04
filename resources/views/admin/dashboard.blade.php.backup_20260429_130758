@@ -1,0 +1,58 @@
+@extends('admin.layouts.app')
+
+@section('title', 'Dashboard')
+@section('topbar_title', 'Dashboard')
+
+@section('content')
+<div class="page-title">
+    <h1>Dashboard</h1>
+    <p>Kurumsal CMS içerik durumunu buradan takip edebilirsiniz.</p>
+</div>
+
+<div class="grid grid-4">
+    <div class="stat-card">
+        <div class="stat-label">Sayfalar</div>
+        <div class="stat-number">{{ $stats['pages'] }}</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-label">Hizmetler</div>
+        <div class="stat-number">{{ $stats['services'] }}</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-label">Blog Yazıları</div>
+        <div class="stat-number">{{ $stats['posts'] }}</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-label">Ekip Üyeleri</div>
+        <div class="stat-number">{{ $stats['team_members'] }}</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-label">Slider</div>
+        <div class="stat-number">{{ $stats['sliders'] }}</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-label">Gelen Mesajlar</div>
+        <div class="stat-number">{{ $stats['contact_messages'] }}</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-label">Okunmamış Mesaj</div>
+        <div class="stat-number">{{ $stats['unread_messages'] }}</div>
+    </div>
+</div>
+
+<br>
+
+<div class="card">
+    <h2 style="margin-top:0;">Sonraki Modüller</h2>
+    <p style="color:#6b7280;">
+        Panel giriş sistemi hazır. Bir sonraki adımda sayfa yönetimi modülünü ekleyeceğiz.
+        Böylece <strong>Hakkımızda</strong>, <strong>İletişim</strong> ve sınırsız özel sayfalar panelden yönetilebilir hale gelecek.
+    </p>
+</div>
+@endsection

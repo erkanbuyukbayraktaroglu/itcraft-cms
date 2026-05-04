@@ -1,0 +1,88 @@
+@extends('admin.layouts.app')
+
+@section('title', 'Admin Kullanıcıları')
+@section('topbar_title', 'Admin Kullanıcıları')
+
+@section('content')
+<div class="page-title">
+    <h1>Admin Kullanıcıları</h1>
+    <p>Yönetim paneline erişebilecek admin kullanıcılarını buradan yönetebilirsin.</p>
+</div>
+
+<div class="card">
+    <div style="display:flex; justify-content:space-between; gap:14px; align-items:center; margin-bottom:18px; flex-wrap:wrap;">
+        <div>
+            <h2 style="margin:0;">Kullanıcı Listesi</h2>
+            <p style="margin:6px 0 0; color:#6b7280;">Panel erişim yetkisi olan kullanıcılar.</p>
+        </div>
+
+        <a href="{{ route('admin.users.create') }}" class="btn">Yeni Admin Ekle</a>
+    </div>
+
+    @if($users->count())
+        <div class="table-wrap">
+            <table>
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Ad Soyad</th>
+                    <th>E-posta</th>
+                    <th>Rol</th>
+                    <th>Durum</th>
+                    <th>Oluşturulma</th>
+                    <th>İşlem</th>
+                </tr>
+                </thead>
+
+                <tbody>
+                @foreach($users as $user)
+                    <tr>
+                        <td>{{ $user->id }}</td>
+
+                        <td>
+                            <strong>{{ $user->name }}</strong>
+
+                            @if((int) session('admin_user_id') === (int) $user->id)
+                                <span class="badge badge-success" style="margin-left:6px;">Sen</span>
+                            @endif
+                        </td>
+
+                        <td>
+                            <a href="mailto:{{ $user->email }}">{{ $user->email }}</a>
+                        </td>
+
+                        <td>{{ $user->role ?? 'admin' }}</td>
+
+                        <td>
+                            @if((int) ($user->is_active ?? 0) === 1)
+                                <span class="badge badge-success">Aktif</span>
+                            @else
+                                <span class="badge">Pasif</span>
+                            @endif
+                        </td>
+
+                        <td>{{ $user->created_at ?? '-' }}</td>
+
+                        <td>
+                            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                                <a href="{{ route('admin.users.edit', $user->id) }}" class="btn btn-secondary">Düzenle</a>
+
+                                @if((int) session('admin_user_id') !== (int) $user->id)
+                                    <form method="post" action="{{ route('admin.users.destroy', $user->id) }}" onsubmit="return confirm('Bu admin kullanıcısını silmek istediğine emin misin?');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-danger">Sil</button>
+                                    </form>
+                                @endif
+                            </div>
+                        </td>
+                    </tr>
+                @endforeach
+                </tbody>
+            </table>
+        </div>
+    @else
+        <p style="color:#6b7280;">Henüz admin kullanıcısı bulunmuyor.</p>
+    @endif
+</div>
+@endsection

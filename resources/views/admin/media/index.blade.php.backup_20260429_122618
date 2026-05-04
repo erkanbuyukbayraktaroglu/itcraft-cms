@@ -1,0 +1,109 @@
+@extends('admin.layouts.app')
+
+@section('title', 'Medya Yönetimi')
+@section('topbar_title', 'Medya Yönetimi')
+
+@section('content')
+<div class="page-title">
+    <h1>Medya Yönetimi</h1>
+    <p>Slider, logo, sayfa, hizmet, blog ve ekip görsellerini buradan yükleyebilirsin.</p>
+</div>
+
+<div class="card" style="margin-bottom:22px;">
+    <h2 style="margin-top:0;">Yeni Görsel Yükle</h2>
+
+    <form method="post" action="{{ route('admin.media.store') }}" enctype="multipart/form-data">
+        @csrf
+
+        @if($errors->any())
+            <div class="alert-error">
+                Lütfen yükleme alanını kontrol edin.
+            </div>
+        @endif
+
+        <label for="media_file">Görsel Dosyası</label>
+        <input class="form-control" type="file" id="media_file" name="media_file" accept=".jpg,.jpeg,.png,.webp,.gif,.svg" required>
+
+        <small style="display:block; margin-top:-8px; margin-bottom:14px; color:#6b7280; line-height:1.6;">
+            İzin verilen formatlar: <strong>jpg, jpeg, png, webp, gif, svg</strong>. 
+            Maksimum dosya boyutu: <strong>5 MB</strong>.
+            Slider için önerilen ölçü: <strong>1920 x 800 px</strong>.
+        </small>
+
+        <button type="submit" class="btn">Görseli Yükle</button>
+    </form>
+</div>
+
+<div class="card">
+    <h2 style="margin-top:0;">Yüklenen Görseller</h2>
+
+    @if(count($mediaFiles))
+        <div style="display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:18px;">
+            @foreach($mediaFiles as $media)
+                <div style="border:1px solid #e5e7eb; border-radius:16px; overflow:hidden; background:#fff;">
+                    <div style="height:160px; background:#f3f4f6; display:flex; align-items:center; justify-content:center;">
+                        @if($media['extension'] === 'svg')
+                            <img src="{{ $media['url'] }}" alt="{{ $media['name'] }}" style="max-width:100%; max-height:140px; object-fit:contain;">
+                        @else
+                            <img src="{{ $media['url'] }}" alt="{{ $media['name'] }}" style="width:100%; height:160px; object-fit:cover;">
+                        @endif
+                    </div>
+
+                    <div style="padding:14px;">
+                        <strong style="display:block; font-size:14px; word-break:break-word;">{{ $media['name'] }}</strong>
+
+                        <small style="display:block; color:#6b7280; margin:8px 0;">
+                            Boyut: {{ number_format($media['size'] / 1024, 1) }} KB
+                        </small>
+
+                        <label style="margin-top:10px;">Kullanılacak Path</label>
+                        <input class="form-control"
+                               type="text"
+                               value="{{ $media['path'] }}"
+                               readonly
+                               onclick="this.select(); document.execCommand('copy');"
+                               style="font-size:13px; margin-bottom:8px;">
+
+                        <small style="display:block; color:#6b7280; line-height:1.5;">
+                            Kutucuğa tıklayınca path seçilir/kopyalanır. Bu path’i slider, logo veya görsel alanlarında kullanabilirsin.
+                        </small>
+
+                        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:12px;">
+                            <a href="{{ $media['url'] }}" target="_blank" class="btn btn-secondary">Aç</a>
+
+                            <form method="post" action="{{ route('admin.media.destroy') }}" onsubmit="return confirm('Bu görseli silmek istediğine emin misin?');">
+                                @csrf
+                                @method('DELETE')
+                                <input type="hidden" name="file" value="{{ $media['path'] }}">
+                                <button type="submit" class="btn btn-danger">Sil</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    @else
+        <p style="color:#6b7280;">Henüz görsel yüklenmemiş.</p>
+    @endif
+</div>
+
+<style>
+    @media (max-width: 1200px) {
+        .card > div[style*="grid-template-columns:repeat(4"] {
+            grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+        }
+    }
+
+    @media (max-width: 900px) {
+        .card > div[style*="grid-template-columns:repeat(4"] {
+            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        }
+    }
+
+    @media (max-width: 600px) {
+        .card > div[style*="grid-template-columns:repeat(4"] {
+            grid-template-columns: 1fr !important;
+        }
+    }
+</style>
+@endsection
